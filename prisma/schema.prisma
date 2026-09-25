@@ -150,6 +150,7 @@ model GenerationLog {
   repo             Repo?     @relation(fields: [repoId], references: [id], onDelete: SetNull)
   promptVersion    String    @map("prompt_version")
   status           String    // SUCCESS | FAILED | SKIPPED_CACHE | RATE_LIMITED
+  tokensUsed       Int       @default(0) @map("tokens_used")
   promptTokens     Int       @default(0) @map("prompt_tokens")
   completionTokens Int       @default(0) @map("completion_tokens")
   totalTokens      Int       @default(0) @map("total_tokens")
