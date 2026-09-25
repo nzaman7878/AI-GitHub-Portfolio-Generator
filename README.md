@@ -27,7 +27,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 2** — TypeScript strict mode + path aliases (`strict: true`, `@/` import alias, base types in `types/`)
 - [x] **Phase 3** — Environment configuration (`.env.example`, runtime Zod validation in `lib/env.ts`, `.gitignore` verification)
 - [x] **Phase 4** — Git hooks + code quality (Husky, lint-staged, and Commitlint for conventional commits)
-- [ ] **Phase 5** — CI pipeline via GitHub Actions (Automated lint, type-check, and build on push/PR)
+- [x] **Phase 5** — CI pipeline via GitHub Actions (Automated lint, type-check, and build on push/PR)
 
 ### 🗄️ Database Layer (Phases 6–12)
 
