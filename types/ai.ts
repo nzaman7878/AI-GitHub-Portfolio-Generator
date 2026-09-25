@@ -14,7 +14,9 @@ export interface GeneratedCaseStudySchema {
   subtitle?: string;
   summary: string;
   problemStatement: string;
+  approach?: string;
   architecture: string;
+  impact?: string;
   keyDecisions: KeyDecision[];
   techStack: string[];
   highlights: string[];
@@ -22,11 +24,7 @@ export interface GeneratedCaseStudySchema {
   impactMetrics?: ImpactMetric[];
 }
 
-export type GenerationStatus =
-  | "SUCCESS"
-  | "FAILED"
-  | "SKIPPED_CACHE"
-  | "RATE_LIMITED";
+export type GenerationStatus = "SUCCESS" | "FAILED" | "SKIPPED_CACHE" | "RATE_LIMITED";
 
 export interface GenerationTokenUsage {
   promptTokens: number;

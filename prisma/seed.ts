@@ -64,8 +64,12 @@ async function main() {
                   "Designed and engineered an ultra-low latency distributed consensus engine based on Raft. Utilizes Linux io_uring for non-blocking WAL appending and ring-buffer ring buffers to bypass kernel copy overhead.",
                 problemStatement:
                   "Traditional Raft implementations in Go/Java suffer from GC pauses (50-200ms) and heavy syscall overhead during high-frequency write-ahead log (WAL) syncs, causing unpredictable consensus timeouts under high tail load.",
+                approach:
+                  "Replaced blocking thread pools with Linux io_uring asynchronous ring buffers and custom memory arena allocators for zero-copy TCP framing.",
                 architecture:
                   "Asynchronous actor topology built atop Rust's Tokio runtime. Storage tier employs a custom direct-I/O append-only segment allocator with io_uring batching. Network pipeline uses custom frame encoders over TCP streams with TCP_NODELAY and epoll-driven dispatch.",
+                impact:
+                  "Sustained 450,000 committed ops/sec with sub-millisecond p99 latency while cutting tail memory footprint to 42MB.",
                 keyDecisions: [
                   {
                     decision: "Replace standard fsync with io_uring submission queues",
@@ -131,8 +135,12 @@ async function main() {
                   "Constructed an event router in Go supporting dynamic, multi-tenant payload transformation using embedded Wasmtime runtimes without requiring gateway restarts.",
                 problemStatement:
                   "Microservices needing payload masking, schema enrichment, and dynamic routing were creating point-to-point Kafka consumers, leading to consumer lag and duplicate pipeline management costs.",
+                approach:
+                  "Embedded lightweight, sandboxed WebAssembly execution runtimes directly into the network ingress stream with pre-warmed instance caches.",
                 architecture:
                   "Decoupled pipeline with lock-free ring buffers between network ingress workers and dynamic WASM worker pools. Outbound batches are dispatched to partitioned Kafka topics using snappy compression.",
+                impact:
+                  "Processes 2.1M events/sec, enables atomic live policy reload in under 2ms, and cut cross-region cloud egress costs by 34%.",
                 keyDecisions: [
                   {
                     decision: "Wasmtime runtime embedding for user-submitted filters",
@@ -244,8 +252,12 @@ async function main() {
                   "Built an infinite interactive graph diagramming engine capable of fluidly panning, zooming, and editing 10,000+ complex operational nodes at native display refresh rates.",
                 problemStatement:
                   "DOM/SVG-based graph editors degrade severely past 300 visible nodes due to layout thrashing and browser memory overhead, crippling enterprise workflow builder UX.",
+                approach:
+                  "Bypassed the browser DOM using a hybrid rendering pipeline: WebGL GPU instanced shaders for wire connections and virtualized Canvas 2D for interactive cards.",
                 architecture:
                   "Layered architecture: WebGL shader layer for batch connection wire renders; high-precision 2D Canvas for interactive node cards; decoupled Zustand reactive state engine with spatial Quadtree indices for instant viewport query and collision checks.",
+                impact:
+                  "Maintains steady 60-120 FPS on 10,000+ connected nodes while keeping memory footprint under 35MB.",
                 keyDecisions: [
                   {
                     decision: "QuadTree spatial indexing for hit testing and viewport culling",

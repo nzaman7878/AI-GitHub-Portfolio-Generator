@@ -126,7 +126,9 @@ model CaseStudy {
   subtitle         String?
   summary          String    @db.Text
   problemStatement String    @db.Text @map("problem_statement")
+  approach         String?   @db.Text
   architecture     String    @db.Text
+  impact           String?   @db.Text
   keyDecisions     Json      @default("[]") @map("key_decisions") // [{ decision: string, rationale: string, tradeOff: string }]
   techStack        String[]  @default([]) @map("tech_stack")
   highlights       String[]  @default([])
