@@ -3,9 +3,9 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("🌱 Seeding database for local development...");
 
-  // Clean existing data for idempotent seeding
+  // Clean existing records to guarantee idempotent execution
   await prisma.generationLog.deleteMany({});
   await prisma.caseStudy.deleteMany({});
   await prisma.repo.deleteMany({});
@@ -13,7 +13,10 @@ async function main() {
   await prisma.account.deleteMany({});
   await prisma.user.deleteMany({});
 
-  // 1. Create primary sample user: Alex Chen (Systems & Cloud Engineer)
+  // ===========================================================================
+  // USER 1: Alex Chen (Distributed Systems & Cloud Infrastructure Architect)
+  // 5 repos, 3 case studies
+  // ===========================================================================
   const userAlex = await prisma.user.create({
     data: {
       username: "alexchen",
@@ -31,6 +34,7 @@ async function main() {
       theme: "editorial",
       repos: {
         create: [
+          // Repo 1 (With Case Study)
           {
             githubId: BigInt(104820491),
             name: "raft-consensus-engine",
@@ -61,7 +65,7 @@ async function main() {
                   "Building a Zero-Copy Raft Consensus Engine for Ultra-Low Latency NVMe Fabrics",
                 subtitle: "Achieving 450k op/s consensus with sub-millisecond p99 latency in Rust",
                 summary:
-                  "Designed and engineered an ultra-low latency distributed consensus engine based on Raft. Utilizes Linux io_uring for non-blocking WAL appending and ring-buffer ring buffers to bypass kernel copy overhead.",
+                  "Designed and engineered an ultra-low latency distributed consensus engine based on Raft. Utilizes Linux io_uring for non-blocking WAL appending and ring buffers to bypass kernel copy overhead.",
                 problemStatement:
                   "Traditional Raft implementations in Go/Java suffer from GC pauses (50-200ms) and heavy syscall overhead during high-frequency write-ahead log (WAL) syncs, causing unpredictable consensus timeouts under high tail load.",
                 approach:
@@ -102,6 +106,7 @@ async function main() {
               },
             },
           },
+          // Repo 2 (With Case Study)
           {
             githubId: BigInt(204859102),
             name: "flux-stream-router",
@@ -167,6 +172,73 @@ async function main() {
               },
             },
           },
+          // Repo 3 (With Case Study)
+          {
+            githubId: BigInt(250194821),
+            name: "hyper-wal",
+            fullName: "alexchen/hyper-wal",
+            description:
+              "Direct-I/O append-only write-ahead log engine in C++ with memory-mapped checkpointing and CRC32C segment verification.",
+            htmlUrl: "https://github.com/alexchen/hyper-wal",
+            homepage: "https://github.com/alexchen/hyper-wal",
+            language: "C++",
+            primaryLanguage: "C++",
+            languageBreakdown: {
+              "C++": 195000,
+              CMake: 14000,
+            },
+            stars: 620,
+            forks: 52,
+            openIssues: 4,
+            topics: ["cpp", "wal", "storage-engine", "direct-io", "mmap"],
+            commitCount: 220,
+            isSelected: true,
+            displayOrder: 3,
+            lastPushedAt: new Date("2026-06-10T14:15:00Z"),
+            readmeContent: `# hyper-wal\n\nA zero-fluff write-ahead log engine designed for distributed transactional storage layers.`,
+            caseStudy: {
+              create: {
+                title: "Engineering a Lock-Free Append-Only WAL for Mission-Critical Transactions",
+                subtitle:
+                  "Eliminating storage tail latency through direct-I/O aligned segment batching",
+                summary:
+                  "Built a standalone append-only write-ahead log engine in C++ utilizing O_DIRECT sector alignment and AVX2-accelerated checksum verification to prevent tail-latency spikes during disk flushes.",
+                problemStatement:
+                  "OS page cache writeback contention caused periodic 300ms latency spikes when synchronizing dirty pages, impacting transactional databases under high write pressure.",
+                approach:
+                  "Bypassed the Linux page cache entirely using 4KB sector-aligned direct I/O memory buffers and asynchronous disk synchronization via double-buffered memory rings.",
+                architecture:
+                  "Double-buffered memory ring where active transactions write into user-space aligned buffers while a background worker issues direct I/O flushes to disk. Segments rotate automatically at 64MB boundaries.",
+                impact:
+                  "Eliminated OS cache writeback stalls, maintaining bounded p99.9 write latency under 1.2ms at 80,000 synchronous commits/sec.",
+                keyDecisions: [
+                  {
+                    decision: "Bypass OS page cache with O_DIRECT flags",
+                    rationale:
+                      "Guaranteed predictable write latency by avoiding kernel writeback background throttling.",
+                    tradeOff:
+                      "Requires all writes to be aligned to physical disk sector boundaries.",
+                  },
+                ],
+                techStack: ["C++", "CMake", "Linux Syscalls", "AVX2", "Google Benchmark"],
+                highlights: [
+                  "1.2ms p99.9 append latency under heavy write saturation",
+                  "AVX2 vectorized CRC32C computation at 12 GB/sec",
+                  "Automated zero-downtime log segment compaction",
+                ],
+                challengesSolved:
+                  "Fixed torn write detection during unexpected node power losses by maintaining atomic 8-byte sequence tail markers.",
+                impactMetrics: [
+                  { metric: "p99.9 Append Latency", value: "1.2 ms" },
+                  { metric: "Throughput", value: "80k commits/s" },
+                  { metric: "Verification Speed", value: "12 GB/s" },
+                ],
+                promptVersion: "v1.0",
+                isPublished: true,
+              },
+            },
+          },
+          // Repo 4 (Without Case Study)
           {
             githubId: BigInt(309482711),
             name: "k8s-cost-sentinel",
@@ -186,15 +258,41 @@ async function main() {
             topics: ["kubernetes", "finops", "k8s-operator", "golang"],
             commitCount: 165,
             isSelected: true,
-            displayOrder: 3,
+            displayOrder: 4,
             lastPushedAt: new Date("2026-07-20T10:00:00Z"),
+          },
+          // Repo 5 (Without Case Study)
+          {
+            githubId: BigInt(350918234),
+            name: "bpf-tcp-telemetry",
+            fullName: "alexchen/bpf-tcp-telemetry",
+            description:
+              "eBPF kernel probe monitor tracking TCP socket retransmits, handshake delays, and window sizing in real-time.",
+            htmlUrl: "https://github.com/alexchen/bpf-tcp-telemetry",
+            language: "C",
+            primaryLanguage: "C",
+            languageBreakdown: {
+              C: 112000,
+              Go: 45000,
+            },
+            stars: 310,
+            forks: 22,
+            openIssues: 1,
+            topics: ["ebpf", "bpf", "linux-kernel", "networking", "telemetry"],
+            commitCount: 95,
+            isSelected: true,
+            displayOrder: 5,
+            lastPushedAt: new Date("2026-05-14T09:30:00Z"),
           },
         ],
       },
     },
   });
 
-  // 2. Create second sample user: Sarah Kim (Product & Frontend Systems)
+  // ===========================================================================
+  // USER 2: Sarah Kim (Frontend Systems & Design Engineering Lead)
+  // 5 repos, 3 case studies
+  // ===========================================================================
   const userSarah = await prisma.user.create({
     data: {
       username: "sarahkim",
@@ -212,6 +310,7 @@ async function main() {
       theme: "editorial",
       repos: {
         create: [
+          // Repo 1 (With Case Study)
           {
             githubId: BigInt(409283719),
             name: "canvas-flow-editor",
@@ -291,12 +390,206 @@ async function main() {
               },
             },
           },
+          // Repo 2 (With Case Study)
+          {
+            githubId: BigInt(450192837),
+            name: "fluid-design-tokens",
+            fullName: "sarahkim/fluid-design-tokens",
+            description:
+              "Multi-platform design token compiler transforming Figma variables into CSS variables, Tailwind presets, and Swift/Kotlin themes.",
+            htmlUrl: "https://github.com/sarahkim/fluid-design-tokens",
+            homepage: "https://tokens.sarahkim.design",
+            language: "TypeScript",
+            primaryLanguage: "TypeScript",
+            languageBreakdown: {
+              TypeScript: 185000,
+              JSON: 42000,
+            },
+            stars: 1420,
+            forks: 160,
+            openIssues: 7,
+            topics: ["design-tokens", "design-system", "tailwind", "figma-api", "cross-platform"],
+            commitCount: 290,
+            isSelected: true,
+            displayOrder: 2,
+            lastPushedAt: new Date("2026-08-28T11:20:00Z"),
+            readmeContent: `# fluid-design-tokens\n\nA unified multi-brand design token transformer with automated Figma REST sync.`,
+            caseStudy: {
+              create: {
+                title:
+                  "Architecting a Multi-Platform Design Token Pipeline from Figma to Native Apps",
+                subtitle:
+                  "Eliminating design-engineering drift across Web, iOS, and Android codebases",
+                summary:
+                  "Constructed an automated token transformation compiler that ingests Figma Variables and compiles type-safe design tokens for Tailwind CSS, iOS Swift (AssetCatalogs), and Android Jetpack Compose.",
+                problemStatement:
+                  "Manual translation of design specs into CSS and mobile code created subtle color and typography discrepancies, slowing down product release cycles across 4 engineering teams.",
+                approach:
+                  "Built an AST-based transformation pipeline validating token hierarchies with JSON Schema and generating deterministic code bindings with zero runtime overhead.",
+                architecture:
+                  "CLI compiler engine that pulls Figma Variables API payloads, normalizes aliases into a DAG (Directed Acyclic Graph) for cyclic reference detection, and dispatches target platform emitters using Handlebars templates.",
+                impact:
+                  "Reduced brand token update cycles from 3 days to 45 seconds while ensuring 100% color and typography parity.",
+                keyDecisions: [
+                  {
+                    decision: "DAG resolution for aliased color palettes",
+                    rationale:
+                      "Prevented infinite loops and deadlocks when designers nested semantic color aliases 4 levels deep.",
+                    tradeOff: "Requires strict dependency topological sorting before emission.",
+                  },
+                ],
+                techStack: [
+                  "TypeScript",
+                  "Node.js",
+                  "Figma REST API",
+                  "Handlebars",
+                  "Zod",
+                  "Vitest",
+                ],
+                highlights: [
+                  "Sub-second compilation for 2,400+ design tokens across 3 brands",
+                  "Generated TypeScript definitions with autocomplete for all theme classes",
+                  "Automated GitHub Pull Request creation on Figma file version publications",
+                ],
+                challengesSolved:
+                  "Handled alpha transparency color blending calculations across color spaces by implementing OKLCH gamut mapping algorithms.",
+                impactMetrics: [
+                  { metric: "Deployment Time", value: "< 45 seconds" },
+                  { metric: "Design Parity", value: "100% across Web/Mobile" },
+                  { metric: "Tokens Managed", value: "2,400+ tokens" },
+                ],
+                promptVersion: "v1.0",
+                isPublished: true,
+              },
+            },
+          },
+          // Repo 3 (With Case Study)
+          {
+            githubId: BigInt(480928173),
+            name: "a11y-tree-auditor",
+            fullName: "sarahkim/a11y-tree-auditor",
+            description:
+              "Chromium CDP-based automated accessibility scanner validating accessibility trees, ARIA states, and color contrast in CI/CD.",
+            htmlUrl: "https://github.com/sarahkim/a11y-tree-auditor",
+            homepage: "https://github.com/sarahkim/a11y-tree-auditor",
+            language: "TypeScript",
+            primaryLanguage: "TypeScript",
+            languageBreakdown: {
+              TypeScript: 142000,
+              HTML: 18000,
+            },
+            stars: 980,
+            forks: 85,
+            openIssues: 6,
+            topics: ["accessibility", "a11y", "playwright", "wcag", "automated-testing"],
+            commitCount: 210,
+            isSelected: true,
+            displayOrder: 3,
+            lastPushedAt: new Date("2026-07-12T16:00:00Z"),
+            readmeContent: `# a11y-tree-auditor\n\nDeep accessibility tree inspection and automated WCAG 2.2 AAA validation in CI.`,
+            caseStudy: {
+              create: {
+                title:
+                  "Building an Automated Accessibility Tree Scanner for Continuous WCAG Compliance",
+                subtitle:
+                  "Catching dynamic screen reader regressions before merging code to production",
+                summary:
+                  "Created a headless browser auditing tool connecting to Chrome DevTools Protocol to analyze the computed accessibility tree and detect inaccessible focus traps and missing ARIA relationships.",
+                problemStatement:
+                  "Standard static linting misses runtime accessibility failures such as improper focus management in complex modal dialogs and dynamic live regions.",
+                approach:
+                  "Instrumented browser execution traces via Chrome DevTools Protocol to inspect the live accessibility node tree rather than relying merely on static DOM heuristics.",
+                architecture:
+                  "Playwright-powered test runner that captures accessibility snapshots during simulated user interactions, calculates exact WCAG contrast ratios across translucent overlays, and outputs formatted GitHub PR annotations.",
+                impact:
+                  "Caught 42 critical keyboard trap defects in CI prior to production release, achieving 99.4% automated accessibility test coverage.",
+                keyDecisions: [
+                  {
+                    decision: "Direct CDP Accessibility Tree inspection over axe-core alone",
+                    rationale:
+                      "Allowed evaluating how assistive technology actually interprets computed nodes rather than guessing from DOM attributes.",
+                    tradeOff: "Requires running Chromium in headless container environments.",
+                  },
+                ],
+                techStack: [
+                  "TypeScript",
+                  "Playwright",
+                  "Chrome DevTools Protocol",
+                  "WCAG 2.2",
+                  "GitHub Actions",
+                ],
+                highlights: [
+                  "Zero false-positive contrast calculations on animated background gradients",
+                  "Automated keyboard tab navigation replay simulation",
+                  "Direct integration with GitHub Checks API for inline PR feedback",
+                ],
+                challengesSolved:
+                  "Solved false contrast warnings on CSS backdrop-filter blur elements by rendering localized canvas color samples.",
+                impactMetrics: [
+                  { metric: "Accessibility Coverage", value: "99.4%" },
+                  { metric: "Regressions Caught", value: "42 in CI" },
+                  { metric: "Audit Run Time", value: "< 8 sec" },
+                ],
+                promptVersion: "v1.0",
+                isPublished: true,
+              },
+            },
+          },
+          // Repo 4 (Without Case Study)
+          {
+            githubId: BigInt(510293847),
+            name: "micro-frontend-shell",
+            fullName: "sarahkim/micro-frontend-shell",
+            description:
+              "Module Federation micro-frontend orchestrator with shared state synchronization and isolated stylesheet boundaries.",
+            htmlUrl: "https://github.com/sarahkim/micro-frontend-shell",
+            language: "TypeScript",
+            primaryLanguage: "TypeScript",
+            languageBreakdown: {
+              TypeScript: 125000,
+              JavaScript: 34000,
+            },
+            stars: 640,
+            forks: 72,
+            openIssues: 4,
+            topics: ["module-federation", "micro-frontends", "webpack", "react"],
+            commitCount: 180,
+            isSelected: true,
+            displayOrder: 4,
+            lastPushedAt: new Date("2026-06-25T13:40:00Z"),
+          },
+          // Repo 5 (Without Case Study)
+          {
+            githubId: BigInt(530948271),
+            name: "css-subgrid-experiments",
+            fullName: "sarahkim/css-subgrid-experiments",
+            description:
+              "Interactive playground showcasing advanced modern CSS Grid, Subgrid, Container Queries, and view transitions.",
+            htmlUrl: "https://github.com/sarahkim/css-subgrid-experiments",
+            homepage: "https://subgrid.sarahkim.design",
+            language: "CSS",
+            primaryLanguage: "CSS",
+            languageBreakdown: {
+              CSS: 82000,
+              HTML: 24000,
+            },
+            stars: 490,
+            forks: 41,
+            openIssues: 2,
+            topics: ["css", "subgrid", "container-queries", "web-standards"],
+            commitCount: 75,
+            isSelected: true,
+            displayOrder: 5,
+            lastPushedAt: new Date("2026-04-18T10:15:00Z"),
+          },
         ],
       },
     },
   });
 
-  // 3. Create Sample Generation Logs (demonstrating API quota tracking & cache hits)
+  // ===========================================================================
+  // Generation Logs (Tracking AI API usage, cache skips, and token budgets)
+  // ===========================================================================
   await prisma.generationLog.createMany({
     data: [
       {
@@ -332,12 +625,23 @@ async function main() {
         durationMs: 2780,
         rawResponse: '{"status":"ok","model":"gemini-1.5-pro"}',
       },
+      {
+        userId: userSarah.id,
+        promptVersion: "v1.0",
+        status: "SKIPPED_CACHE",
+        tokensUsed: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+        durationMs: 15,
+        rawResponse: '{"reason":"repo unchanged since last pushed timestamp"}',
+      },
     ],
   });
 
-  console.log(
-    `✅ Seed completed: Created users "${userAlex.username}" and "${userSarah.username}" with repos and case studies.`,
-  );
+  console.log("✅ Seed completed successfully!");
+  console.log(`- User 1: "${userAlex.username}" (5 repos, 3 case studies)`);
+  console.log(`- User 2: "${userSarah.username}" (5 repos, 3 case studies)`);
 }
 
 main()

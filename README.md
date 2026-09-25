@@ -37,7 +37,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 9** — Case study schema (`CaseStudy` model for problem statement, architecture, key decisions, and impact metrics)
 - [x] **Phase 10** — Generation log schema (`GenerationLog` model to track token consumption and preserve free-tier quota)
 - [x] **Phase 11** — First migration + Prisma client (Generated PostgreSQL DDL migration and singleton in `lib/db.ts`)
-- [ ] **Phase 12** — Seed script (`prisma/seed.ts` with realistic developer personas and case studies)
+- [x] **Phase 12** — Seed script (`prisma/seed.ts` with realistic developer personas and case studies)
 
 ### 🔐 Authentication (Phases 13–17)
 
