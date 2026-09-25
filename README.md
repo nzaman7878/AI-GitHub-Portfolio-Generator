@@ -31,7 +31,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 ### 🗄️ Database Layer (Phases 6–12)
 
-- [ ] **Phase 6** — Prisma setup + Postgres connection (Prisma ORM with PostgreSQL provider)
+- [x] **Phase 6** — Prisma setup + Postgres connection (Prisma ORM with PostgreSQL provider)
 - [ ] **Phase 7** — User schema (`User` model with portfolio slug, username, bio, and theme)
 - [ ] **Phase 8** — Repository schema (`Repo` model with stars, language breakdowns, and commit activity)
 - [ ] **Phase 9** — Case study schema (`CaseStudy` model for problem statement, architecture, key decisions, and impact metrics)

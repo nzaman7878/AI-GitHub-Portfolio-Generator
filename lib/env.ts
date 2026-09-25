@@ -5,28 +5,14 @@ import { z } from "zod";
  * Never expose these variables to the browser/client.
  */
 const serverSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
-  DATABASE_URL: z
-    .string()
-    .min(1, "DATABASE_URL is required (e.g., postgresql://...)"),
-  NEXTAUTH_URL: z
-    .string()
-    .url("NEXTAUTH_URL must be a valid URL")
-    .default("http://localhost:3000"),
-  NEXTAUTH_SECRET: z
-    .string()
-    .min(16, "NEXTAUTH_SECRET must be at least 16 characters long"),
-  GITHUB_CLIENT_ID: z
-    .string()
-    .min(1, "GITHUB_CLIENT_ID is required for GitHub OAuth"),
-  GITHUB_CLIENT_SECRET: z
-    .string()
-    .min(1, "GITHUB_CLIENT_SECRET is required for GitHub OAuth"),
-  GEMINI_API_KEY: z
-    .string()
-    .min(1, "GEMINI_API_KEY is required for AI case-study generation"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required (e.g., postgresql://...)"),
+  DIRECT_URL: z.string().optional(),
+  NEXTAUTH_URL: z.string().url("NEXTAUTH_URL must be a valid URL").default("http://localhost:3000"),
+  NEXTAUTH_SECRET: z.string().min(16, "NEXTAUTH_SECRET must be at least 16 characters long"),
+  GITHUB_CLIENT_ID: z.string().min(1, "GITHUB_CLIENT_ID is required for GitHub OAuth"),
+  GITHUB_CLIENT_SECRET: z.string().min(1, "GITHUB_CLIENT_SECRET is required for GitHub OAuth"),
+  GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required for AI case-study generation"),
 });
 
 /**
@@ -46,8 +32,7 @@ const clientSchema = z.object({
 function validateEnv() {
   const isServer = typeof window === "undefined";
   const skipValidation =
-    process.env.SKIP_ENV_VALIDATION === "true" ||
-    process.env.NODE_ENV === "test";
+    process.env.SKIP_ENV_VALIDATION === "true" || process.env.NODE_ENV === "test";
 
   if (skipValidation) {
     return {
@@ -68,7 +53,10 @@ function validateEnv() {
 
   const parsedClient = clientSchema.safeParse(rawClient);
   if (!parsedClient.success) {
-    console.error("❌ Invalid client environment variables:", parsedClient.error.flatten().fieldErrors);
+    console.error(
+      "❌ Invalid client environment variables:",
+      parsedClient.error.flatten().fieldErrors,
+    );
     throw new Error("Invalid client environment variables. Check .env.local");
   }
 
@@ -81,6 +69,7 @@ function validateEnv() {
   const rawServer = {
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
