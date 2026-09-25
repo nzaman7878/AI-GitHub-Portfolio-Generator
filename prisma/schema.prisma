@@ -64,6 +64,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
+  avatarUrl     String?   @map("avatar_url")
   username      String?   @unique
   githubId      String?   @unique @map("github_id")
   bio           String?   @db.Text
