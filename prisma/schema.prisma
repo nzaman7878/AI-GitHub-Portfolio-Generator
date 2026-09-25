@@ -1,0 +1,159 @@
+// Prisma Schema for AI GitHub Portfolio Generator
+// Supports PostgreSQL (Neon / Supabase / Local)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// NextAuth / Auth.js Models
+// -------------------------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// -------------------------------------------------------------
+// Application Core Models
+// -------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  username      String?   @unique
+  githubId      String?   @unique @map("github_id")
+  bio           String?   @db.Text
+  portfolioSlug String?   @unique @map("portfolio_slug")
+  websiteUrl    String?   @map("website_url")
+  location      String?
+  headline      String?   // User-defined editorial headline/tagline
+  theme         String    @default("editorial") // editorial | mono | brutalist
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  accounts       Account[]
+  sessions       Session[]
+  repos          Repo[]
+  generationLogs GenerationLog[]
+
+  @@map("users")
+}
+
+model Repo {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubId       BigInt    @map("github_id")
+  name           String
+  fullName       String    @map("full_name")
+  description    String?   @db.Text
+  htmlUrl        String    @map("html_url")
+  homepage       String?
+  primaryLanguage String?  @map("primary_language")
+  languageBreakdown Json?  @map("language_breakdown") // { [lang: string]: number (bytes) }
+  stars          Int       @default(0)
+  forks          Int       @default(0)
+  openIssues     Int       @default(0) @map("open_issues")
+  topics         String[]  @default([])
+  readmeContent  String?   @db.Text @map("readme_content")
+  commitCount    Int       @default(0) @map("commit_count")
+  isSelected     Boolean   @default(true) @map("is_selected")
+  displayOrder   Int       @default(0) @map("display_order")
+  lastPushedAt   DateTime? @map("last_pushed_at")
+  lastSyncedAt   DateTime  @default(now()) @map("last_synced_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  caseStudy      CaseStudy?
+  generationLogs GenerationLog[]
+
+  @@unique([userId, githubId])
+  @@index([userId, isSelected])
+  @@map("repos")
+}
+
+model CaseStudy {
+  id               String    @id @default(cuid())
+  repoId           String    @unique @map("repo_id")
+  repo             Repo      @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  title            String
+  subtitle         String?
+  summary          String    @db.Text
+  problemStatement String    @db.Text @map("problem_statement")
+  architecture     String    @db.Text
+  keyDecisions     Json      @default("[]") @map("key_decisions") // [{ decision: string, rationale: string, tradeOff: string }]
+  techStack        String[]  @default([]) @map("tech_stack")
+  highlights       String[]  @default([])
+  challengesSolved String?   @db.Text @map("challenges_solved")
+  impactMetrics    Json?     @map("impact_metrics") // [{ metric: string, value: string }]
+  promptVersion    String    @default("v1.0") @map("prompt_version")
+  isPublished      Boolean   @default(true) @map("is_published")
+  generatedAt      DateTime  @default(now()) @map("generated_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@map("case_studies")
+}
+
+model GenerationLog {
+  id               String    @id @default(cuid())
+  userId           String?   @map("user_id")
+  user             User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  repoId           String?   @map("repo_id")
+  repo             Repo?     @relation(fields: [repoId], references: [id], onDelete: SetNull)
+  promptVersion    String    @map("prompt_version")
+  status           String    // SUCCESS | FAILED | SKIPPED_CACHE | RATE_LIMITED
+  promptTokens     Int       @default(0) @map("prompt_tokens")
+  completionTokens Int       @default(0) @map("completion_tokens")
+  totalTokens      Int       @default(0) @map("total_tokens")
+  durationMs       Int       @default(0) @map("duration_ms")
+  errorMessage     String?   @db.Text @map("error_message")
+  rawResponse      String?   @db.Text @map("raw_response")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([repoId, createdAt])
+  @@map("generation_logs")
+}
