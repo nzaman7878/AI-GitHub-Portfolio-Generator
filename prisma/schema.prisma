@@ -94,6 +94,7 @@ model Repo {
   description    String?   @db.Text
   htmlUrl        String    @map("html_url")
   homepage       String?
+  language       String?
   primaryLanguage String?  @map("primary_language")
   languageBreakdown Json?  @map("language_breakdown") // { [lang: string]: number (bytes) }
   stars          Int       @default(0)

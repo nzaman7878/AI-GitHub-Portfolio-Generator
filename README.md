@@ -33,7 +33,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 - [x] **Phase 6** — Prisma setup + Postgres connection (Prisma ORM with PostgreSQL provider)
 - [x] **Phase 7** — User schema (`User` model with portfolio slug, username, bio, and theme)
-- [ ] **Phase 8** — Repository schema (`Repo` model with stars, language breakdowns, and commit activity)
+- [x] **Phase 8** — Repository schema (`Repo` model with stars, language breakdowns, and commit activity)
 - [ ] **Phase 9** — Case study schema (`CaseStudy` model for problem statement, architecture, key decisions, and impact metrics)
 - [ ] **Phase 10** — Generation log schema (`GenerationLog` model to track token consumption and preserve free-tier quota)
 - [ ] **Phase 11** — First migration + Prisma client (Generated PostgreSQL DDL migration and singleton in `lib/db.ts`)

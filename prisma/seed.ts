@@ -39,6 +39,7 @@ async function main() {
               "High-performance Raft consensus engine implemented in Rust with zero-copy network serialization and io_uring storage log.",
             htmlUrl: "https://github.com/alexchen/raft-consensus-engine",
             homepage: "https://crates.io/crates/raft-consensus-engine",
+            language: "Rust",
             primaryLanguage: "Rust",
             languageBreakdown: {
               Rust: 284000,
@@ -105,6 +106,7 @@ async function main() {
               "Distributed event mesh gateway routing 2M events/sec across Kafka and NATS clusters with WASM filter extensions.",
             htmlUrl: "https://github.com/alexchen/flux-stream-router",
             homepage: "https://flux-router.dev",
+            language: "Go",
             primaryLanguage: "Go",
             languageBreakdown: {
               Go: 340000,
@@ -164,6 +166,7 @@ async function main() {
             description:
               "Kubernetes mutating admission controller that detects underutilized cloud resources and automates vertical pod rightsizing.",
             htmlUrl: "https://github.com/alexchen/k8s-cost-sentinel",
+            language: "Go",
             primaryLanguage: "Go",
             languageBreakdown: {
               Go: 154000,
@@ -209,6 +212,7 @@ async function main() {
               "WebGL & Canvas node-based graph editor with 60fps rendering for massive 10,000+ node workflow orchestration.",
             htmlUrl: "https://github.com/sarahkim/canvas-flow-editor",
             homepage: "https://flow.sarahkim.design",
+            language: "TypeScript",
             primaryLanguage: "TypeScript",
             languageBreakdown: {
               TypeScript: 420000,
