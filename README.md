@@ -44,7 +44,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 13** — NextAuth core setup (NextAuth / Auth.js with Prisma adapter)
 - [x] **Phase 14** — GitHub OAuth provider (OAuth app configuration, scopes, and token exchange)
 - [x] **Phase 15** — Auth session handling (Server and client session helper utilities)
-- [ ] **Phase 16** — Protected routes middleware (Edge middleware redirecting unauthenticated traffic on `/dashboard/*`)
+- [x] **Phase 16** — Protected routes middleware (Edge middleware redirecting unauthenticated traffic on `/dashboard/*`)
 - [ ] **Phase 17** — Sign-in / sign-out UI (Clean, accessible authentication flows)
 
 ### 📡 GitHub Data Pipeline (Phases 18–23)
