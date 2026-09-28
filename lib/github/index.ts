@@ -28,3 +28,11 @@ export {
   formatBytes,
   GITHUB_LANGUAGE_COLORS,
 } from "./languages";
+
+export {
+  serializeRepo,
+  upsertRepository,
+  persistRepositories,
+  syncAndPersistUserRepositories,
+  type SyncOptions,
+} from "./persist";

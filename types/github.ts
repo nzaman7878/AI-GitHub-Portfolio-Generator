@@ -119,3 +119,50 @@ export interface RepoLanguageBreakdown {
   totalBytes: number;
   primaryLanguage: string | null;
 }
+
+export interface UpsertRepoInput {
+  githubId: number | bigint;
+  name: string;
+  fullName: string;
+  description?: string | null;
+  htmlUrl: string;
+  homepage?: string | null;
+  language?: string | null;
+  primaryLanguage?: string | null;
+  languageBreakdown?: Record<string, number> | null;
+  stars?: number;
+  forks?: number;
+  openIssues?: number;
+  topics?: string[];
+  readmeContent?: string | null;
+  commitCount?: number;
+  lastPushedAt?: string | Date | null;
+  isSelected?: boolean;
+  displayOrder?: number;
+}
+
+export interface SerializedRepo {
+  id: string;
+  userId: string;
+  githubId: number;
+  name: string;
+  fullName: string;
+  description: string | null;
+  htmlUrl: string;
+  homepage: string | null;
+  language: string | null;
+  primaryLanguage: string | null;
+  languageBreakdown: Record<string, number> | null;
+  stars: number;
+  forks: number;
+  openIssues: number;
+  topics: string[];
+  readmeContent: string | null;
+  commitCount: number;
+  isSelected: boolean;
+  displayOrder: number;
+  lastPushedAt: string | null;
+  lastSyncedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAuth } from "@/lib/session";
 import {
   getAuthenticatedOctokit,
   withRateLimitHandling,
@@ -7,16 +8,21 @@ import {
   fetchRepoReadme,
   fetchRepoCommitStats,
   fetchRepoLanguages,
+  upsertRepository,
+  syncAndPersistUserRepositories,
   GitHubAuthError,
   GitHubRateLimitError,
   type FetchUserReposOptions,
   type MarkdownExtractOptions,
+  type SyncOptions,
 } from "@/lib/github";
 import type {
   ParsedRepository,
   RepoReadmeData,
   RepoCommitStats,
   RepoLanguageBreakdown,
+  UpsertRepoInput,
+  SerializedRepo,
 } from "@/types/github";
 
 export type FetchUserRepositoriesResult =
@@ -256,6 +262,105 @@ export async function fetchRepoLanguagesAction(
 
     const message =
       error instanceof Error ? error.message : `Failed to fetch languages for ${owner}/${repo}.`;
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type UpsertRepositoryResult =
+  | {
+      success: true;
+      repo: SerializedRepo;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Upserts a repository record in Postgres for the authenticated user.
+ */
+export async function upsertRepositoryAction(
+  repoData: UpsertRepoInput,
+): Promise<UpsertRepositoryResult> {
+  try {
+    const user = await requireAuth();
+    const repo = await upsertRepository(user.id, repoData);
+
+    return {
+      success: true,
+      repo,
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to persist repository.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type SyncAndPersistResult =
+  | {
+      success: true;
+      totalSynced: number;
+      repos: SerializedRepo[];
+    }
+  | {
+      success: false;
+      error: string;
+      rateLimited?: boolean;
+      retryAfter?: number;
+    };
+
+/**
+ * Server Action: Fetches user repositories from GitHub API, enriches key projects,
+ * and persists the updated dataset into PostgreSQL with lastSyncedAt timestamps.
+ */
+export async function syncAndPersistUserRepositoriesAction(
+  options?: SyncOptions,
+): Promise<SyncAndPersistResult> {
+  try {
+    const user = await requireAuth();
+    const octokit = await getAuthenticatedOctokit();
+
+    const result = await withRateLimitHandling(
+      () => syncAndPersistUserRepositories(user.id, octokit, options),
+      {
+        maxRetries: 2,
+        initialDelayMs: 1000,
+        autoWaitIfSmall: true,
+      },
+    );
+
+    return {
+      success: true,
+      totalSynced: result.totalSynced,
+      repos: result.repos,
+    };
+  } catch (error: unknown) {
+    if (error instanceof GitHubAuthError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    if (error instanceof GitHubRateLimitError) {
+      return {
+        success: false,
+        error: error.message,
+        rateLimited: true,
+        retryAfter: error.retryAfterSeconds,
+      };
+    }
+
+    const message =
+      error instanceof Error ? error.message : "Failed to sync and persist repositories.";
 
     return {
       success: false,
