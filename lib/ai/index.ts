@@ -25,3 +25,9 @@ export {
   CASE_STUDY_INSTRUCTIONS,
   buildCaseStudyPrompt,
 } from "./prompts";
+
+export {
+  generateCaseStudyForRepo,
+  serializeCaseStudy,
+  type GenerateCaseStudyResponse,
+} from "./generate";

@@ -68,3 +68,31 @@ export interface CaseStudyPromptContext {
   forks?: number;
   contributorCount?: number;
 }
+
+export interface GenerateCaseStudyOptions {
+  repoId: string;
+  userId?: string;
+  customInstructions?: string;
+  forceRegenerate?: boolean;
+}
+
+export interface SerializedCaseStudy {
+  id: string;
+  repoId: string;
+  title: string;
+  subtitle: string | null;
+  summary: string;
+  problemStatement: string;
+  approach: string | null;
+  architecture: string;
+  impact: string | null;
+  keyDecisions: KeyDecision[];
+  techStack: string[];
+  highlights: string[];
+  challengesSolved: string | null;
+  impactMetrics: ImpactMetric[] | null;
+  promptVersion: string;
+  isPublished: boolean;
+  generatedAt: string;
+  updatedAt: string;
+}
