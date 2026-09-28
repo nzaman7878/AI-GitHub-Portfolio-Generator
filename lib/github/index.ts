@@ -10,3 +10,5 @@ export {
   withRateLimitHandling,
   type RateLimitWrapperOptions,
 } from "./rate-limit";
+
+export { parseRepository, fetchUserPublicRepositories, type FetchUserReposOptions } from "./repos";

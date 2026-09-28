@@ -65,3 +65,24 @@ export interface RateLimitOverview {
   search: RateLimitState;
   graphql?: RateLimitState;
 }
+
+export interface ParsedRepository {
+  githubId: number;
+  name: string;
+  fullName: string;
+  description: string | null;
+  htmlUrl: string;
+  homepage: string | null;
+  language: string | null;
+  stars: number;
+  forks: number;
+  openIssues: number;
+  topics: string[];
+  isFork: boolean;
+  isArchived: boolean;
+  isPrivate: boolean;
+  pushedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  defaultBranch: string;
+}
