@@ -58,7 +58,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 ### 🤖 AI Generation Pipeline (Phases 24–30)
 
-- [ ] **Phase 24** — Gemini API client setup (Google Generative AI SDK with structured JSON mode)
+- [x] **Phase 24** — Gemini API client setup (Google Generative AI SDK with structured JSON mode)
 - [ ] **Phase 25** — Case study prompt engineering (Deep engineering prompt: Problem → Approach → Architecture → Impact)
 - [ ] **Phase 26** — Zod output schema (Strict runtime validation schema for AI output)
 - [ ] **Phase 27** — Generation Server Action (End-to-end repository-to-case-study pipeline)
