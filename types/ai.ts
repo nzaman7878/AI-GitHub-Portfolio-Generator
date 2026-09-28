@@ -96,3 +96,51 @@ export interface SerializedCaseStudy {
   generatedAt: string;
   updatedAt: string;
 }
+
+export type BatchItemStatus =
+  "PENDING" | "GENERATING" | "SUCCESS" | "SKIPPED_CACHE" | "FAILED" | "RATE_LIMITED";
+
+export interface BatchItemResult {
+  repoId: string;
+  repoName: string;
+  status: "SUCCESS" | "SKIPPED_CACHE" | "FAILED" | "RATE_LIMITED";
+  caseStudy?: SerializedCaseStudy;
+  error?: string;
+  cached?: boolean;
+  durationMs: number;
+  tokensUsed: number;
+}
+
+export interface BatchGenerationProgress {
+  total: number;
+  current: number;
+  completed: number;
+  skipped: number;
+  failed: number;
+  rateLimited: number;
+  currentRepoName?: string;
+  percentage: number;
+  status: "idle" | "running" | "completed" | "aborted";
+}
+
+export interface BatchGenerationSummary {
+  total: number;
+  succeeded: number;
+  skipped: number;
+  failed: number;
+  rateLimited: number;
+  totalDurationMs: number;
+  totalTokensUsed: number;
+  results: BatchItemResult[];
+}
+
+export interface BatchGenerateOptions {
+  repoIds: string[];
+  userId?: string;
+  forceRegenerate?: boolean;
+  stopOnRateLimit?: boolean;
+  onProgress?: (
+    progress: BatchGenerationProgress,
+    itemResult?: BatchItemResult,
+  ) => void | Promise<void>;
+}

@@ -64,7 +64,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 27** — Generation Server Action (End-to-end repository-to-case-study pipeline)
 - [x] **Phase 28** — Cache + skip logic (Content hash/timestamp check to bypass redundant regeneration)
 - [x] **Phase 29** — Rate-limit handling (Graceful backoff, queueing, and quota meters for free tier)
-- [ ] **Phase 30** — Batch generation (Sequential multi-repo generation with live progress)
+- [x] **Phase 30** — Batch generation (Sequential multi-repo generation with live progress)
 
 ### 🎨 Design System (Phases 31–36)
 

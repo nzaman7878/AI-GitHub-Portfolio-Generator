@@ -43,3 +43,5 @@ export {
   type GeminiQuotaStatus,
   type EnqueueOptions,
 } from "./rate-limit";
+
+export { generateBatchCaseStudies } from "./batch";

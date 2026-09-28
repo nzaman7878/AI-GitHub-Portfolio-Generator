@@ -123,3 +123,52 @@ export async function getGeminiQuotaStatusAction(): Promise<GetQuotaStatusResult
     };
   }
 }
+
+export interface BatchGenerateCaseStudiesActionParams {
+  repoIds: string[];
+  forceRegenerate?: boolean;
+  stopOnRateLimit?: boolean;
+}
+
+export type BatchGenerateCaseStudiesActionResult =
+  | {
+      success: true;
+      summary: import("@/types/ai").BatchGenerationSummary;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Generates case studies for multiple repositories sequentially.
+ * Honors Gemini rate limits, checks cache freshness, and returns a detailed batch summary.
+ */
+export async function generateBatchCaseStudiesAction(
+  params: BatchGenerateCaseStudiesActionParams,
+): Promise<BatchGenerateCaseStudiesActionResult> {
+  try {
+    const user = await requireAuth();
+    const { generateBatchCaseStudies } = await import("@/lib/ai/batch");
+
+    const summary = await generateBatchCaseStudies({
+      repoIds: params.repoIds,
+      userId: user.id,
+      forceRegenerate: params.forceRegenerate,
+      stopOnRateLimit: params.stopOnRateLimit,
+    });
+
+    return {
+      success: true,
+      summary,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to execute batch case study generation.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
