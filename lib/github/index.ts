@@ -12,3 +12,10 @@ export {
 } from "./rate-limit";
 
 export { parseRepository, fetchUserPublicRepositories, type FetchUserReposOptions } from "./repos";
+
+export {
+  fetchRepoReadme,
+  extractPlainTextFromMarkdown,
+  type MarkdownExtractOptions,
+  type ExtractResult,
+} from "./readme";

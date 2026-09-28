@@ -51,7 +51,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 - [x] **Phase 18** — Octokit client setup (Rate-limit aware GitHub REST client)
 - [x] **Phase 19** — Fetch user repositories (Server Action retrieving public repositories)
-- [ ] **Phase 20** — Fetch repo README content (README fetch and markdown text extraction for LLM context)
+- [x] **Phase 20** — Fetch repo README content (README fetch and markdown text extraction for LLM context)
 - [ ] **Phase 21** — Fetch commit statistics (Commit counts, frequency, and recency analysis)
 - [ ] **Phase 22** — Fetch language breakdown (Byte-level language distributions and percentages)
 - [ ] **Phase 23** — Persist repo data to Postgres (Upsert logic with `lastSyncedAt` tracking)

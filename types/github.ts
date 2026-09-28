@@ -86,3 +86,11 @@ export interface ParsedRepository {
   updatedAt: string;
   defaultBranch: string;
 }
+
+export interface RepoReadmeData {
+  raw: string | null;
+  plainText: string | null;
+  charCount: number;
+  hasReadme: boolean;
+  truncated: boolean;
+}
