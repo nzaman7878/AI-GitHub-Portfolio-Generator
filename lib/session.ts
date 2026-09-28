@@ -28,3 +28,22 @@ export async function requireAuth() {
   }
   return user;
 }
+
+/**
+ * Server-side helper to retrieve the user's GitHub OAuth access token.
+ */
+export async function getGitHubAccessToken(): Promise<string | undefined> {
+  const session = await getAuthSession();
+  return session?.accessToken;
+}
+
+/**
+ * Server-side assertion ensuring the current session has an active GitHub OAuth access token.
+ */
+export async function requireGitHubAccessToken(): Promise<string> {
+  const token = await getGitHubAccessToken();
+  if (!token) {
+    throw new Error("Unauthorized: Active GitHub OAuth access token required.");
+  }
+  return token;
+}

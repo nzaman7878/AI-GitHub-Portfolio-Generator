@@ -51,3 +51,17 @@ export interface EnrichedRepositoryData {
   readme: string | null;
   commitStats: GitHubCommitStat;
 }
+
+export interface RateLimitState {
+  limit: number;
+  remaining: number;
+  reset: Date;
+  used: number;
+  resource: string;
+}
+
+export interface RateLimitOverview {
+  core: RateLimitState;
+  search: RateLimitState;
+  graphql?: RateLimitState;
+}
