@@ -68,7 +68,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 ### 🎨 Design System (Phases 31–36)
 
-- [ ] **Phase 31** — Design exploration via Stitch (Generating 2–3 bespoke aesthetic directions)
+- [x] **Phase 31** — Design exploration via Stitch (Generating 2–3 bespoke aesthetic directions)
 - [ ] **Phase 32** — Design decision + tokens (Design token extraction documented in `DESIGN.md`)
 - [ ] **Phase 33** — Typography + base styles (Curated editorial font pairing and typography scale)
 - [ ] **Phase 34** — Core UI components (Buttons, inputs, tech stack badges, and alerts)
