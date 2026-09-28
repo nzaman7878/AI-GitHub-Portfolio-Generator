@@ -1,4 +1,5 @@
 import { SchemaType, type ResponseSchema } from "@google/generative-ai";
+import { z } from "zod";
 
 /**
  * Structured JSON Schema for Gemini generative AI to output strict,
@@ -118,3 +119,103 @@ export const caseStudyResponseSchema: ResponseSchema = {
     "highlights",
   ],
 };
+
+// ==============================================================================
+// Strict Zod Runtime Validation Schema for AI-Generated Case Studies
+// ==============================================================================
+
+export const keyDecisionSchema = z.object({
+  decision: z.string().min(2, "Decision must be at least 2 characters"),
+  rationale: z.string().min(2, "Rationale must be at least 2 characters"),
+  tradeOff: z.string().min(2, "Trade-off must be at least 2 characters"),
+});
+
+export const impactMetricSchema = z.object({
+  metric: z.string().min(1, "Metric label is required"),
+  value: z.string().min(1, "Metric value is required"),
+});
+
+export const caseStudyOutputSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title must not exceed 200 characters"),
+  subtitle: z.string().max(300).optional().nullable(),
+  summary: z.string().min(10, "Summary must be at least 10 characters"),
+  problemStatement: z.string().min(10, "Problem statement must be at least 10 characters"),
+  approach: z.string().optional().nullable(),
+  architecture: z.string().min(10, "Architecture must be at least 10 characters"),
+  impact: z.string().optional().nullable(),
+  keyDecisions: z
+    .array(keyDecisionSchema)
+    .min(1, "At least one architectural decision is required"),
+  techStack: z
+    .array(z.string().min(1))
+    .min(1, "At least one technology must be listed in techStack"),
+  highlights: z.array(z.string().min(2)).min(1, "At least one highlight is required"),
+  challengesSolved: z.string().optional().nullable(),
+  impactMetrics: z.array(impactMetricSchema).optional().nullable(),
+});
+
+export type CaseStudyOutput = z.infer<typeof caseStudyOutputSchema>;
+
+export interface CaseStudyValidationSuccess {
+  success: true;
+  data: CaseStudyOutput;
+}
+
+export interface CaseStudyValidationFailure {
+  success: false;
+  error: string;
+  issues: z.ZodIssue[];
+  raw?: unknown;
+}
+
+export type CaseStudyValidationResult = CaseStudyValidationSuccess | CaseStudyValidationFailure;
+
+/**
+ * Validates AI-generated case study output against the strict Zod schema before database persistence.
+ * Safely parses raw strings (stripping markdown fences if present) or pre-parsed JSON objects.
+ */
+export function validateCaseStudyOutput(input: unknown): CaseStudyValidationResult {
+  let parsedJson: unknown = input;
+
+  if (typeof input === "string") {
+    try {
+      let cleaned = input.trim();
+      // Remove markdown code fences if output by LLM (```json ... ```)
+      if (cleaned.startsWith("```")) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      }
+      parsedJson = JSON.parse(cleaned);
+    } catch (parseErr: unknown) {
+      const msg = parseErr instanceof Error ? parseErr.message : "Invalid JSON string";
+      return {
+        success: false,
+        error: `Failed to parse AI output as JSON: ${msg}`,
+        issues: [],
+        raw: input,
+      };
+    }
+  }
+
+  const result = caseStudyOutputSchema.safeParse(parsedJson);
+
+  if (!result.success) {
+    const errorDetails = result.error.issues
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join("; ");
+
+    return {
+      success: false,
+      error: `Validation error in generated case study: ${errorDetails}`,
+      issues: result.error.issues,
+      raw: parsedJson,
+    };
+  }
+
+  return {
+    success: true,
+    data: result.data,
+  };
+}

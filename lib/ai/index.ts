@@ -8,7 +8,17 @@ export {
   type CaseStudyModelOptions,
 } from "./client";
 
-export { caseStudyResponseSchema } from "./schema";
+export {
+  caseStudyResponseSchema,
+  caseStudyOutputSchema,
+  keyDecisionSchema,
+  impactMetricSchema,
+  validateCaseStudyOutput,
+  type CaseStudyOutput,
+  type CaseStudyValidationResult,
+  type CaseStudyValidationSuccess,
+  type CaseStudyValidationFailure,
+} from "./schema";
 
 export {
   CASE_STUDY_PROMPT_VERSION,
