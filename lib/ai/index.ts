@@ -32,3 +32,14 @@ export {
   serializeCaseStudy,
   type GenerateCaseStudyResponse,
 } from "./generate";
+
+export {
+  GEMINI_RPM_LIMIT,
+  GEMINI_RPD_LIMIT,
+  MIN_REQUEST_INTERVAL_MS,
+  getGeminiQuotaUsage,
+  enqueueGeminiRequest,
+  GeminiQuotaExhaustedError,
+  type GeminiQuotaStatus,
+  type EnqueueOptions,
+} from "./rate-limit";

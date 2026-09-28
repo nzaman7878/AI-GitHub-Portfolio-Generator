@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { getCaseStudyModel } from "./client";
 import { buildCaseStudyPrompt, CASE_STUDY_PROMPT_VERSION } from "./prompts";
 import { validateCaseStudyOutput } from "./schema";
+import { enqueueGeminiRequest, GeminiQuotaExhaustedError } from "./rate-limit";
 import type {
   CaseStudyPromptContext,
   GenerateCaseStudyOptions,
@@ -178,9 +179,11 @@ export async function generateCaseStudyForRepo(
   }
 
   try {
-    // 4. Invoke Gemini with structured JSON mode
+    // 4. Invoke Gemini with structured JSON mode inside rate-limiting queue
     const model = getCaseStudyModel();
-    const result = await model.generateContent(prompt);
+    const result = await enqueueGeminiRequest(() => model.generateContent(prompt), {
+      userId: userId ?? repo.userId,
+    });
     const durationMs = Date.now() - startTime;
 
     const rawResponse = result.response.text();
@@ -285,6 +288,7 @@ export async function generateCaseStudyForRepo(
     const message = error instanceof Error ? error.message : "AI generation failed";
 
     const isRateLimited =
+      error instanceof GeminiQuotaExhaustedError ||
       message.toLowerCase().includes("rate limit") ||
       message.toLowerCase().includes("quota") ||
       message.includes("429");
