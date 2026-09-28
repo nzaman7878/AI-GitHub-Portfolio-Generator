@@ -21,3 +21,10 @@ export {
 } from "./readme";
 
 export { fetchRepoCommitStats, parseLastPageFromLinkHeader } from "./commits";
+
+export {
+  fetchRepoLanguages,
+  calculateLanguagePercentages,
+  formatBytes,
+  GITHUB_LANGUAGE_COLORS,
+} from "./languages";

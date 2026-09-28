@@ -6,12 +6,18 @@ import {
   fetchUserPublicRepositories,
   fetchRepoReadme,
   fetchRepoCommitStats,
+  fetchRepoLanguages,
   GitHubAuthError,
   GitHubRateLimitError,
   type FetchUserReposOptions,
   type MarkdownExtractOptions,
 } from "@/lib/github";
-import type { ParsedRepository, RepoReadmeData, RepoCommitStats } from "@/types/github";
+import type {
+  ParsedRepository,
+  RepoReadmeData,
+  RepoCommitStats,
+  RepoLanguageBreakdown,
+} from "@/types/github";
 
 export type FetchUserRepositoriesResult =
   | {
@@ -191,6 +197,65 @@ export async function fetchRepoCommitStatsAction(
 
     const message =
       error instanceof Error ? error.message : `Failed to fetch commit stats for ${owner}/${repo}.`;
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type FetchRepoLanguagesResult =
+  | {
+      success: true;
+      breakdown: RepoLanguageBreakdown;
+    }
+  | {
+      success: false;
+      error: string;
+      rateLimited?: boolean;
+      retryAfter?: number;
+    };
+
+/**
+ * Server Action: Fetches language byte distribution and percentages for a repository.
+ */
+export async function fetchRepoLanguagesAction(
+  owner: string,
+  repo: string,
+): Promise<FetchRepoLanguagesResult> {
+  try {
+    const octokit = await getAuthenticatedOctokit();
+
+    const breakdown = await withRateLimitHandling(() => fetchRepoLanguages(octokit, owner, repo), {
+      maxRetries: 2,
+      initialDelayMs: 1000,
+      autoWaitIfSmall: true,
+    });
+
+    return {
+      success: true,
+      breakdown,
+    };
+  } catch (error: unknown) {
+    if (error instanceof GitHubAuthError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    if (error instanceof GitHubRateLimitError) {
+      return {
+        success: false,
+        error: error.message,
+        rateLimited: true,
+        retryAfter: error.retryAfterSeconds,
+      };
+    }
+
+    const message =
+      error instanceof Error ? error.message : `Failed to fetch languages for ${owner}/${repo}.`;
 
     return {
       success: false,

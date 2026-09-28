@@ -103,3 +103,19 @@ export interface RepoCommitStats {
   contributorCount: number;
   isEmpty: boolean;
 }
+
+export interface LanguageMetric {
+  name: string;
+  bytes: number;
+  percentage: number;
+  formattedPercentage: string;
+  formattedSize: string;
+  color?: string;
+}
+
+export interface RepoLanguageBreakdown {
+  languages: LanguageMetric[];
+  rawBreakdown: Record<string, number>;
+  totalBytes: number;
+  primaryLanguage: string | null;
+}
