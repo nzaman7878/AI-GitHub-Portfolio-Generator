@@ -50,6 +50,7 @@ export type GenerateCaseStudyResponse =
   | {
       success: true;
       caseStudy: SerializedCaseStudy;
+      cached?: boolean;
       tokensUsed: number;
       durationMs: number;
     }
@@ -61,23 +62,48 @@ export type GenerateCaseStudyResponse =
     };
 
 /**
+ * Checks whether an existing CaseStudy is up-to-date with repository commit activity
+ * and current prompt architecture, avoiding redundant LLM generation calls.
+ */
+export function isCaseStudyFresh(
+  repo: { lastPushedAt?: Date | string | null; createdAt: Date | string },
+  caseStudy: { generatedAt: Date | string; promptVersion: string },
+): boolean {
+  if (caseStudy.promptVersion !== CASE_STUDY_PROMPT_VERSION) {
+    return false;
+  }
+
+  const generatedTime = new Date(caseStudy.generatedAt).getTime();
+
+  if (repo.lastPushedAt) {
+    const pushedTime = new Date(repo.lastPushedAt).getTime();
+    return generatedTime >= pushedTime;
+  }
+
+  const createdTime = new Date(repo.createdAt).getTime();
+  return generatedTime >= createdTime;
+}
+
+/**
  * Orchestrates the full AI generation pipeline:
- * 1. Fetches repository context from PostgreSQL.
- * 2. Compiles the multi-section architectural prompt.
- * 3. Calls Gemini Generative AI in structured JSON mode.
- * 4. Validates output strictly with Zod.
- * 5. Persists the result into the CaseStudy table.
- * 6. Logs complete telemetry (tokens, duration, status) into GenerationLog table.
+ * 1. Fetches repository context and existing CaseStudy from PostgreSQL.
+ * 2. Checks cache freshness against repo.lastPushedAt unless forceRegenerate is true.
+ * 3. Compiles the multi-section architectural prompt.
+ * 4. Calls Gemini Generative AI in structured JSON mode.
+ * 5. Validates output strictly with Zod.
+ * 6. Persists the result into the CaseStudy table.
+ * 7. Logs complete telemetry (tokens, duration, status) into GenerationLog table.
  */
 export async function generateCaseStudyForRepo(
   options: GenerateCaseStudyOptions,
 ): Promise<GenerateCaseStudyResponse> {
-  const { repoId, userId, customInstructions } = options;
+  const { repoId, userId, customInstructions, forceRegenerate = false } = options;
   const startTime = Date.now();
 
-  // 1. Fetch repository from database
+  // 1. Fetch repository from database with existing case study
   const repo = await db.repo.findUnique({
     where: { id: repoId },
+    include: { caseStudy: true },
   });
 
   if (!repo) {
@@ -95,6 +121,36 @@ export async function generateCaseStudyForRepo(
       error: "Unauthorized: You do not own this repository.",
       status: "FAILED",
     };
+  }
+
+  // 3. Cache & Skip Check: bypass API call if case study is already fresh
+  if (!forceRegenerate && repo.caseStudy) {
+    const isFresh = isCaseStudyFresh(repo, repo.caseStudy);
+    if (isFresh) {
+      await db.generationLog.create({
+        data: {
+          userId: userId ?? repo.userId,
+          repoId: repo.id,
+          promptVersion: repo.caseStudy.promptVersion,
+          status: "SKIPPED_CACHE",
+          tokensUsed: 0,
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          durationMs: 0,
+          errorMessage:
+            "Skipped generation: existing case study is up-to-date with last commit activity.",
+        },
+      });
+
+      return {
+        success: true,
+        caseStudy: serializeCaseStudy(repo.caseStudy),
+        cached: true,
+        tokensUsed: 0,
+        durationMs: 0,
+      };
+    }
   }
 
   // 3. Assemble prompt context

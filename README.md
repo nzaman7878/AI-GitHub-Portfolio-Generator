@@ -62,7 +62,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 25** — Case study prompt engineering (Deep engineering prompt: Problem → Approach → Architecture → Impact)
 - [x] **Phase 26** — Zod output schema (Strict runtime validation schema for AI output)
 - [x] **Phase 27** — Generation Server Action (End-to-end repository-to-case-study pipeline)
-- [ ] **Phase 28** — Cache + skip logic (Content hash/timestamp check to bypass redundant regeneration)
+- [x] **Phase 28** — Cache + skip logic (Content hash/timestamp check to bypass redundant regeneration)
 - [ ] **Phase 29** — Rate-limit handling (Graceful backoff, queueing, and quota meters for free tier)
 - [ ] **Phase 30** — Batch generation (Sequential multi-repo generation with live progress)
 

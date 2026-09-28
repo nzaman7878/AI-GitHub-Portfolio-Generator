@@ -28,6 +28,7 @@ export {
 
 export {
   generateCaseStudyForRepo,
+  isCaseStudyFresh,
   serializeCaseStudy,
   type GenerateCaseStudyResponse,
 } from "./generate";
