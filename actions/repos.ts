@@ -5,12 +5,13 @@ import {
   withRateLimitHandling,
   fetchUserPublicRepositories,
   fetchRepoReadme,
+  fetchRepoCommitStats,
   GitHubAuthError,
   GitHubRateLimitError,
   type FetchUserReposOptions,
   type MarkdownExtractOptions,
 } from "@/lib/github";
-import type { ParsedRepository, RepoReadmeData } from "@/types/github";
+import type { ParsedRepository, RepoReadmeData, RepoCommitStats } from "@/types/github";
 
 export type FetchUserRepositoriesResult =
   | {
@@ -130,6 +131,66 @@ export async function fetchRepoReadmeAction(
 
     const message =
       error instanceof Error ? error.message : `Failed to fetch README for ${owner}/${repo}.`;
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type FetchRepoCommitStatsResult =
+  | {
+      success: true;
+      stats: RepoCommitStats;
+    }
+  | {
+      success: false;
+      error: string;
+      rateLimited?: boolean;
+      retryAfter?: number;
+    };
+
+/**
+ * Server Action: Fetches commit metrics (total count, latest commit date, sha, message)
+ * and contributor count for a repository.
+ */
+export async function fetchRepoCommitStatsAction(
+  owner: string,
+  repo: string,
+): Promise<FetchRepoCommitStatsResult> {
+  try {
+    const octokit = await getAuthenticatedOctokit();
+
+    const stats = await withRateLimitHandling(() => fetchRepoCommitStats(octokit, owner, repo), {
+      maxRetries: 2,
+      initialDelayMs: 1000,
+      autoWaitIfSmall: true,
+    });
+
+    return {
+      success: true,
+      stats,
+    };
+  } catch (error: unknown) {
+    if (error instanceof GitHubAuthError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    if (error instanceof GitHubRateLimitError) {
+      return {
+        success: false,
+        error: error.message,
+        rateLimited: true,
+        retryAfter: error.retryAfterSeconds,
+      };
+    }
+
+    const message =
+      error instanceof Error ? error.message : `Failed to fetch commit stats for ${owner}/${repo}.`;
 
     return {
       success: false,

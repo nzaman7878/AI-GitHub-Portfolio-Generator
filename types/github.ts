@@ -94,3 +94,12 @@ export interface RepoReadmeData {
   hasReadme: boolean;
   truncated: boolean;
 }
+
+export interface RepoCommitStats {
+  totalCommits: number;
+  lastCommitDate: string | null;
+  lastCommitMessage: string | null;
+  lastCommitSha: string | null;
+  contributorCount: number;
+  isEmpty: boolean;
+}

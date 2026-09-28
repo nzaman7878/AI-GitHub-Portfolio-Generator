@@ -19,3 +19,5 @@ export {
   type MarkdownExtractOptions,
   type ExtractResult,
 } from "./readme";
+
+export { fetchRepoCommitStats, parseLastPageFromLinkHeader } from "./commits";
