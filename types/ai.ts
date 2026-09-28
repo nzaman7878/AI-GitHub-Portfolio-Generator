@@ -51,3 +51,20 @@ export interface GenerationPromptContext {
   commitCount: number;
   stars: number;
 }
+
+export interface CaseStudyPromptContext {
+  repoName: string;
+  fullName?: string;
+  description?: string | null;
+  homepage?: string | null;
+  primaryLanguage?: string | null;
+  languageBreakdown?: Record<string, number> | null;
+  languagePercentages?: Array<{ name: string; percentage: number }>;
+  topics?: string[];
+  readmeContent?: string | null;
+  commitCount?: number;
+  lastPushedAt?: string | Date | null;
+  stars?: number;
+  forks?: number;
+  contributorCount?: number;
+}
