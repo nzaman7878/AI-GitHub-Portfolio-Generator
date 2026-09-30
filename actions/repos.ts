@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/session";
 import {
   getAuthenticatedOctokit,
@@ -10,6 +11,9 @@ import {
   fetchRepoLanguages,
   upsertRepository,
   syncAndPersistUserRepositories,
+  getUserRepositories,
+  toggleRepoSelection,
+  bulkToggleRepoSelection,
   GitHubAuthError,
   GitHubRateLimitError,
   type FetchUserReposOptions,
@@ -23,6 +27,7 @@ import type {
   RepoLanguageBreakdown,
   UpsertRepoInput,
   SerializedRepo,
+  RepoWithStatus,
 } from "@/types/github";
 
 export type FetchUserRepositoriesResult =
@@ -337,6 +342,9 @@ export async function syncAndPersistUserRepositoriesAction(
       },
     );
 
+    revalidatePath("/dashboard/repos");
+    revalidatePath("/dashboard");
+
     return {
       success: true,
       totalSynced: result.totalSynced,
@@ -361,6 +369,118 @@ export async function syncAndPersistUserRepositoriesAction(
 
     const message =
       error instanceof Error ? error.message : "Failed to sync and persist repositories.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type GetUserRepositoriesResult =
+  | {
+      success: true;
+      repos: RepoWithStatus[];
+      total: number;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Fetches all synced repositories for the authenticated user from the database.
+ */
+export async function getUserRepositoriesAction(): Promise<GetUserRepositoriesResult> {
+  try {
+    const user = await requireAuth();
+    const repos = await getUserRepositories(user.id);
+
+    return {
+      success: true,
+      repos,
+      total: repos.length,
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to load repositories.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type ToggleRepoSelectionResult =
+  | {
+      success: true;
+      repo: SerializedRepo;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Toggles or updates a single repository's portfolio inclusion state.
+ */
+export async function toggleRepoSelectionAction(
+  repoId: string,
+  isSelected: boolean,
+): Promise<ToggleRepoSelectionResult> {
+  try {
+    const user = await requireAuth();
+    const repo = await toggleRepoSelection(user.id, repoId, isSelected);
+
+    revalidatePath("/dashboard/repos");
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      repo,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update repository inclusion status.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export type BulkToggleRepoSelectionResult =
+  | {
+      success: true;
+      updatedCount: number;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Bulk updates portfolio inclusion status for multiple repositories.
+ */
+export async function bulkToggleRepoSelectionAction(
+  repoIds: string[],
+  isSelected: boolean,
+): Promise<BulkToggleRepoSelectionResult> {
+  try {
+    const user = await requireAuth();
+    const updatedCount = await bulkToggleRepoSelection(user.id, repoIds, isSelected);
+
+    revalidatePath("/dashboard/repos");
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      updatedCount,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to bulk update repository inclusion.";
 
     return {
       success: false,

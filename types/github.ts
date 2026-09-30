@@ -166,3 +166,8 @@ export interface SerializedRepo {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface RepoWithStatus extends SerializedRepo {
+  hasCaseStudy?: boolean;
+  caseStudyId?: string | null;
+}

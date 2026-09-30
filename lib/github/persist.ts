@@ -1,6 +1,11 @@
 import { db } from "@/lib/db";
 import type { Octokit } from "octokit";
-import type { UpsertRepoInput, SerializedRepo, ParsedRepository } from "@/types/github";
+import type {
+  UpsertRepoInput,
+  SerializedRepo,
+  ParsedRepository,
+  RepoWithStatus,
+} from "@/types/github";
 import { fetchUserPublicRepositories } from "./repos";
 import { fetchRepoReadme } from "./readme";
 import { fetchRepoCommitStats } from "./commits";
@@ -237,4 +242,70 @@ export async function syncAndPersistUserRepositories(
 
   // 3. Persist all into PostgreSQL
   return await persistRepositories(userId, upsertInputs);
+}
+
+/**
+ * Retrieves all synced repositories for a user from PostgreSQL,
+ * enriched with case study status, sorted by selection and stars.
+ */
+export async function getUserRepositories(userId: string): Promise<RepoWithStatus[]> {
+  const repos = await db.repo.findMany({
+    where: { userId },
+    include: {
+      caseStudy: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: [{ isSelected: "desc" }, { stars: "desc" }, { lastPushedAt: "desc" }],
+  });
+
+  return repos.map((repo) => ({
+    ...serializeRepo(repo),
+    hasCaseStudy: Boolean(repo.caseStudy),
+    caseStudyId: repo.caseStudy?.id ?? null,
+  }));
+}
+
+/**
+ * Toggles or sets the isSelected status for a user's repository.
+ */
+export async function toggleRepoSelection(
+  userId: string,
+  repoId: string,
+  isSelected: boolean,
+): Promise<SerializedRepo> {
+  const updated = await db.repo.update({
+    where: {
+      id: repoId,
+      userId,
+    },
+    data: {
+      isSelected,
+    },
+  });
+
+  return serializeRepo(updated);
+}
+
+/**
+ * Bulk updates the isSelected status for multiple repositories belonging to a user.
+ */
+export async function bulkToggleRepoSelection(
+  userId: string,
+  repoIds: string[],
+  isSelected: boolean,
+): Promise<number> {
+  const result = await db.repo.updateMany({
+    where: {
+      id: { in: repoIds },
+      userId,
+    },
+    data: {
+      isSelected,
+    },
+  });
+
+  return result.count;
 }

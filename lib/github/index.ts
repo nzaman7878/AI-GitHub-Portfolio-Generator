@@ -34,5 +34,8 @@ export {
   upsertRepository,
   persistRepositories,
   syncAndPersistUserRepositories,
+  getUserRepositories,
+  toggleRepoSelection,
+  bulkToggleRepoSelection,
   type SyncOptions,
 } from "./persist";
