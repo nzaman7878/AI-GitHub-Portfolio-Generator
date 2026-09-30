@@ -69,15 +69,15 @@ const config: Config = {
           "serif",
         ],
         sans: [
-          "var(--font-geist-sans)",
-          "Inter",
+          "var(--font-body-sans)",
+          "Plus Jakarta Sans",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "sans-serif",
         ],
         mono: [
-          "var(--font-geist-mono)",
+          "var(--font-telemetry-mono)",
           "JetBrains Mono",
           "Fira Code",
           "Menlo",
@@ -86,17 +86,31 @@ const config: Config = {
         ],
       },
       fontSize: {
-        "display-xl": ["4rem", { lineHeight: "4.25rem", letterSpacing: "-0.025em" }],
-        "headline-xl": ["3.5rem", { lineHeight: "4rem", letterSpacing: "-0.02em" }],
-        "headline-lg": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.015em" }],
-        "headline-md": ["1.5rem", { lineHeight: "2rem", letterSpacing: "-0.01em" }],
-        "headline-sm": ["1.125rem", { lineHeight: "1.5rem", letterSpacing: "-0.005em" }],
-        "body-lg": ["1.125rem", { lineHeight: "1.875rem", letterSpacing: "-0.005em" }],
-        "body-md": ["0.9375rem", { lineHeight: "1.625rem", letterSpacing: "0em" }],
-        "body-sm": ["0.8125rem", { lineHeight: "1.375rem", letterSpacing: "0.005em" }],
-        "label-lg": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "0.04em" }],
-        "label-md": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.06em" }],
-        "label-sm": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.08em" }],
+        // Display scale
+        "display-2xl": ["4.5rem", { lineHeight: "1.05", letterSpacing: "-0.03em" }],
+        "display-xl": ["3.75rem", { lineHeight: "1.1", letterSpacing: "-0.025em" }],
+        "display-lg": ["3rem", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
+
+        // Heading scale
+        "heading-xl": ["2.25rem", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
+        "heading-lg": ["1.75rem", { lineHeight: "1.3", letterSpacing: "-0.015em" }],
+        "heading-md": ["1.375rem", { lineHeight: "1.35", letterSpacing: "-0.01em" }],
+        "heading-sm": ["1.125rem", { lineHeight: "1.4", letterSpacing: "-0.005em" }],
+
+        // Body scale
+        "body-xl": ["1.25rem", { lineHeight: "1.75", letterSpacing: "-0.01em" }],
+        "body-lg": ["1.0625rem", { lineHeight: "1.7", letterSpacing: "-0.005em" }],
+        "body-md": ["0.9375rem", { lineHeight: "1.6", letterSpacing: "0em" }],
+        "body-sm": ["0.8125rem", { lineHeight: "1.55", letterSpacing: "0.005em" }],
+
+        // Caption scale
+        "caption-md": ["0.75rem", { lineHeight: "1.4", letterSpacing: "0.02em" }],
+        "caption-sm": ["0.6875rem", { lineHeight: "1.35", letterSpacing: "0.04em" }],
+
+        // Monospace / Telemetry scale
+        "mono-lg": ["0.875rem", { lineHeight: "1.4", letterSpacing: "0.02em" }],
+        "mono-md": ["0.75rem", { lineHeight: "1.35", letterSpacing: "0.04em" }],
+        "mono-sm": ["0.6875rem", { lineHeight: "1.25", letterSpacing: "0.06em" }],
       },
       borderRadius: {
         none: "0px",
