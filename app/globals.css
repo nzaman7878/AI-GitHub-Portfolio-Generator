@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-paper-canvas: #faf9f5;
+  --color-paper-sheet: #f4f3ed;
+  --color-paper-elevated: #edece4;
+  --color-paper-muted: #e3e2df;
+
+  --color-ink-primary: #121316;
+  --color-ink-secondary: #46464b;
+  --color-ink-muted: #76777b;
+  --color-ink-ghost: #9e9e98;
+
+  --color-terracotta: #8a2d1b;
+  --color-terracotta-light: #a23e2a;
+  --color-terracotta-dark: #721c0b;
+  --color-terracotta-surface: #fdf0ed;
+
+  --color-hairline: #d4d2c9;
+  --color-hairline-subtle: #e3e2dc;
+  --color-hairline-strong: #b8b6ad;
+  --color-hairline-dark: rgba(255, 255, 255, 0.08);
+  --color-hairline-dark-strong: #262932;
+
+  --color-obsidian-void: #090a0d;
+  --color-obsidian-panel: #111318;
+  --color-obsidian-card: #171a22;
+  --color-obsidian-overlay: #1e222d;
+  --color-obsidian-border: #262932;
+
+  --color-bone: #ededee;
+  --color-bone-secondary: #8b8f9a;
+  --color-bone-muted: #4b5160;
+
+  --color-telemetry-cyan: #06b6d4;
+  --color-telemetry-emerald: #10b981;
+  --color-telemetry-amber: #f59e0b;
+  --color-telemetry-rose: #ef4444;
+
+  --font-serif: var(--font-editorial-serif), Newsreader, Playfair Display, Georgia, serif;
+  --font-sans:
+    var(--font-geist-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), "JetBrains Mono", Fira Code, monospace;
+
+  --radius-none: 0px;
+  --radius-subtle: 2px;
+  --radius-soft: 4px;
+
+  --shadow-planar-sm: 1px 1px 0px 0px rgba(18, 19, 22, 0.9);
+  --shadow-planar: 2px 2px 0px 0px rgba(18, 19, 22, 0.9);
+  --shadow-planar-lg: 3px 3px 0px 0px rgba(18, 19, 22, 0.9);
+  --shadow-planar-dark: 2px 2px 0px 0px rgba(0, 0, 0, 0.9);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --background: #faf9f5;
+  --foreground: #121316;
+  --surface: #f4f3ed;
+  --surface-elevated: #edece4;
+  --border: #d4d2c9;
+  --border-subtle: #e3e2dc;
+  --accent: #8a2d1b;
+  --accent-surface: #fdf0ed;
+  --text-muted: #545a66;
+}
+
+.dark {
+  --background: #090a0d;
+  --foreground: #ededee;
+  --surface: #111318;
+  --surface-elevated: #171a22;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: #262932;
+  --accent: #06b6d4;
+  --accent-surface: rgba(6, 182, 212, 0.1);
+  --text-muted: #8b8f9a;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not(.light) {
+    --background: #090a0d;
+    --foreground: #ededee;
+    --surface: #111318;
+    --surface-elevated: #171a22;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-subtle: #262932;
+    --accent: #06b6d4;
+    --accent-surface: rgba(6, 182, 212, 0.1);
+    --text-muted: #8b8f9a;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular figures for code & telemetry metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Monograph Hairline Rules */
+.hairline-b {
+  border-bottom: 1px solid var(--border);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--border);
+}
+
+.hairline-x {
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.hairline-all {
+  border: 1px solid var(--border);
 }
