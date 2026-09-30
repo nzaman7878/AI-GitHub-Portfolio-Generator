@@ -331,3 +331,211 @@ blockquote {
   letter-spacing: 0.08em;
   color: var(--accent);
 }
+
+/* ==========================================================================
+   MOTION SYSTEM & KEYFRAMES
+   ========================================================================== */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageAperture {
+  0% {
+    opacity: 0;
+    transform: scale(0.995) translateY(8px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes revealUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes revealDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes revealLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes revealRight {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseTelemetry {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulseTelemetryCyan {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.45);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgba(6, 182, 212, 0);
+  }
+}
+
+@keyframes hairlineExpand {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Page entrance utilities */
+.animate-page-enter {
+  animation: pageEnter 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-page-aperture {
+  animation: pageAperture 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+/* Telemetry status pulses */
+.telemetry-pulse-emerald {
+  animation: pulseTelemetry 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.telemetry-pulse-cyan {
+  animation: pulseTelemetryCyan 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hard planar interactive card / button micro-interaction */
+.interactive-monograph {
+  transition:
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 140ms ease;
+}
+
+.interactive-monograph:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-planar);
+}
+
+.dark .interactive-monograph:hover {
+  box-shadow: var(--shadow-planar-dark);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.interactive-monograph:active {
+  transform: translate(0px, 0px);
+  box-shadow: none;
+}
+
+/* Editorial underline expand on hover */
+.hover-editorial-line {
+  position: relative;
+  display: inline-block;
+}
+
+.hover-editorial-line::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-editorial-line:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Content-matching Skeleton Shimmer */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-elevated) 0%,
+    var(--surface) 50%,
+    var(--surface-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Accessibility: Respect Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

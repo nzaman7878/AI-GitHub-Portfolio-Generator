@@ -129,6 +129,71 @@ const config: Config = {
         "gutter-desktop": "2.5rem",
         "margin-desktop": "4rem",
       },
+      keyframes: {
+        pageEnter: {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        pageAperture: {
+          "0%": { opacity: "0", transform: "scale(0.99) translateY(8px)", filter: "blur(2px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)", filter: "blur(0px)" },
+        },
+        revealUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        revealDown: {
+          "0%": { opacity: "0", transform: "translateY(-24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        revealLeft: {
+          "0%": { opacity: "0", transform: "translateX(24px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        revealRight: {
+          "0%": { opacity: "0", transform: "translateX(-24px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        pulseTelemetry: {
+          "0%, 100%": {
+            opacity: "1",
+            transform: "scale(1)",
+            boxShadow: "0 0 0 0 rgba(16, 185, 129, 0.4)",
+          },
+          "50%": {
+            opacity: "0.85",
+            transform: "scale(1.05)",
+            boxShadow: "0 0 0 6px rgba(16, 185, 129, 0)",
+          },
+        },
+        pulseTelemetryCyan: {
+          "0%, 100%": {
+            opacity: "1",
+            transform: "scale(1)",
+            boxShadow: "0 0 0 0 rgba(6, 182, 212, 0.4)",
+          },
+          "50%": {
+            opacity: "0.85",
+            transform: "scale(1.05)",
+            boxShadow: "0 0 0 6px rgba(6, 182, 212, 0)",
+          },
+        },
+      },
+      animation: {
+        "page-enter": "pageEnter 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "page-aperture": "pageAperture 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "reveal-up": "revealUp 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "reveal-down": "revealDown 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "reveal-left": "revealLeft 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "reveal-right": "revealRight 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        shimmer: "shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "pulse-telemetry": "pulseTelemetry 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-telemetry-cyan": "pulseTelemetryCyan 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
     },
   },
   plugins: [],

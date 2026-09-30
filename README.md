@@ -73,7 +73,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 33** — Typography + base styles (Curated editorial font pairing and typography scale)
 - [x] **Phase 34** — Core UI components (Buttons, inputs, tech stack badges, and alerts)
 - [x] **Phase 35** — Layout components (Asymmetric editorial grid, page containers, and card primitives)
-- [ ] **Phase 36** — Motion + interaction design (Directional reveals, staggered entrances, and micro-interactions)
+- [x] **Phase 36** — Motion + interaction design (Directional reveals, staggered entrances, and micro-interactions)
 
 ### 📊 Dashboard (Phases 37–42)
 
