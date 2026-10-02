@@ -314,6 +314,8 @@ export type SyncAndPersistResult =
       success: true;
       totalSynced: number;
       repos: SerializedRepo[];
+      durationMs: number;
+      syncedAt: string;
     }
   | {
       success: false;
@@ -329,6 +331,7 @@ export type SyncAndPersistResult =
 export async function syncAndPersistUserRepositoriesAction(
   options?: SyncOptions,
 ): Promise<SyncAndPersistResult> {
+  const startTime = Date.now();
   try {
     const user = await requireAuth();
     const octokit = await getAuthenticatedOctokit();
@@ -345,10 +348,15 @@ export async function syncAndPersistUserRepositoriesAction(
     revalidatePath("/dashboard/repos");
     revalidatePath("/dashboard");
 
+    const durationMs = Date.now() - startTime;
+    const syncedAt = new Date().toISOString();
+
     return {
       success: true,
       totalSynced: result.totalSynced,
       repos: result.repos,
+      durationMs,
+      syncedAt,
     };
   } catch (error: unknown) {
     if (error instanceof GitHubAuthError) {

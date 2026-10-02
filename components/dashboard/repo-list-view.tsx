@@ -8,7 +8,6 @@ import {
   Star,
   GitFork,
   Check,
-  RefreshCw,
   X,
   FileText,
   AlertCircle,
@@ -22,8 +21,9 @@ import { GITHUB_LANGUAGE_COLORS } from "@/lib/github/languages";
 import {
   toggleRepoSelectionAction,
   bulkToggleRepoSelectionAction,
-  syncAndPersistUserRepositoriesAction,
+  getUserRepositoriesAction,
 } from "@/actions/repos";
+import { RepoSyncButton } from "./repo-sync-button";
 import type { RepoWithStatus } from "@/types/github";
 
 export interface RepoListViewProps {
@@ -219,13 +219,12 @@ export function RepoListView({
   const [sortBy, setSortBy] = React.useState<SortOption>("stars");
 
   // Interaction states
-  const [isSyncing, setIsSyncing] = React.useState(false);
-  const [syncFeedback, setSyncFeedback] = React.useState<{
+  const [pendingRepoIds, setPendingRepoIds] = React.useState<Set<string>>(new Set());
+  const [isBulkPending, setIsBulkPending] = React.useState(false);
+  const [bulkFeedback, setBulkFeedback] = React.useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [pendingRepoIds, setPendingRepoIds] = React.useState<Set<string>>(new Set());
-  const [isBulkPending, setIsBulkPending] = React.useState(false);
 
   // Sync state with props
   const [prevInitialRepos, setPrevInitialRepos] = React.useState(initialRepos);
@@ -326,7 +325,7 @@ export function RepoListView({
         setRepos((prev) =>
           prev.map((r) => (r.id === repo.id ? { ...r, isSelected: !newSelected } : r)),
         );
-        setSyncFeedback({
+        setBulkFeedback({
           type: "error",
           message: res.error || "Failed to update repository inclusion.",
         });
@@ -336,7 +335,7 @@ export function RepoListView({
       setRepos((prev) =>
         prev.map((r) => (r.id === repo.id ? { ...r, isSelected: !newSelected } : r)),
       );
-      setSyncFeedback({
+      setBulkFeedback({
         type: "error",
         message: "Network error updating repository inclusion.",
       });
@@ -367,65 +366,23 @@ export function RepoListView({
     try {
       const res = await bulkToggleRepoSelectionAction(targetIds, select);
       if (!res.success) {
-        setSyncFeedback({
+        setBulkFeedback({
           type: "error",
           message: res.error || "Bulk update failed.",
         });
       } else {
-        setSyncFeedback({
+        setBulkFeedback({
           type: "success",
           message: `Successfully updated ${res.updatedCount} repositories.`,
         });
       }
     } catch {
-      setSyncFeedback({
+      setBulkFeedback({
         type: "error",
         message: "An unexpected error occurred during bulk update.",
       });
     } finally {
       setIsBulkPending(false);
-    }
-  };
-
-  // Trigger GitHub sync action
-  const handleSync = async () => {
-    setIsSyncing(true);
-    setSyncFeedback(null);
-
-    try {
-      const res = await syncAndPersistUserRepositoriesAction({
-        enrichTopN: 6,
-        includeForks: false,
-      });
-
-      if (res.success) {
-        setSyncFeedback({
-          type: "success",
-          message: `Synchronized ${res.totalSynced} repositories from GitHub.`,
-        });
-        if (res.repos && res.repos.length > 0) {
-          setRepos(
-            res.repos.map((r) => ({
-              ...r,
-              hasCaseStudy: false,
-              caseStudyId: null,
-            })),
-          );
-        }
-      } else {
-        setSyncFeedback({
-          type: "error",
-          message: res.error || "Failed to synchronize repositories.",
-        });
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Sync error.";
-      setSyncFeedback({
-        type: "error",
-        message,
-      });
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -484,43 +441,46 @@ export function RepoListView({
                 </div>
               </div>
 
-              {/* Sync Button */}
-              <Button
+              {/* One-Click Sync Repos Action */}
+              <RepoSyncButton
                 variant="outline"
                 size="md"
-                onClick={handleSync}
-                isLoading={isSyncing}
-                leftIcon={
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-                }
-                className="gap-2"
-                title="Synchronize latest repositories and commit metadata from GitHub"
-              >
-                {isSyncing ? "Syncing..." : "Sync Repos"}
-              </Button>
+                label="Sync Repos"
+                loadingLabel="Syncing..."
+                onSyncSuccess={async () => {
+                  try {
+                    const res = await getUserRepositoriesAction();
+                    if (res.success && res.repos.length > 0) {
+                      setRepos(res.repos);
+                    }
+                  } catch {
+                    // Handled
+                  }
+                }}
+              />
             </div>
           </div>
 
-          {/* Sync Feedback Alert */}
-          {syncFeedback && (
+          {/* Bulk Update Feedback Alert */}
+          {bulkFeedback && (
             <div
               className={`mt-4 p-3 border font-mono text-mono-sm flex items-center justify-between gap-3 ${
-                syncFeedback.type === "success"
+                bulkFeedback.type === "success"
                   ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-telemetry-emerald/40 text-emerald-800 dark:text-telemetry-emerald"
                   : "bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-telemetry-rose/40 text-rose-800 dark:text-telemetry-rose"
               }`}
             >
               <div className="flex items-center gap-2">
-                {syncFeedback.type === "success" ? (
+                {bulkFeedback.type === "success" ? (
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                 ) : (
                   <AlertCircle className="w-4 h-4 shrink-0" />
                 )}
-                <span>{syncFeedback.message}</span>
+                <span>{bulkFeedback.message}</span>
               </div>
               <button
                 type="button"
-                onClick={() => setSyncFeedback(null)}
+                onClick={() => setBulkFeedback(null)}
                 className="p-1 hover:opacity-75 transition-opacity"
               >
                 <X className="w-3.5 h-3.5" />

@@ -79,7 +79,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 
 - [x] **Phase 37** — Dashboard layout shell (Responsive sidebar, navigation, and user header)
 - [x] **Phase 38** — Repository list view (Synced repositories with status indicators and selection toggles)
-- [ ] **Phase 39** — Repo sync action (One-click GitHub data synchronization with real-time feedback)
+- [x] **Phase 39** — Repo sync action (One-click GitHub data synchronization with real-time feedback)
 - [ ] **Phase 40** — Case study preview + edit (Interactive preview modal with inline overrides)
 - [ ] **Phase 41** — Generation controls (Individual and bulk generate triggers with quota meter)
 - [ ] **Phase 42** — Dashboard settings (Custom portfolio slug, theme selection, and display toggles)
