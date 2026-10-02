@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RefreshCw, CheckCircle2, AlertCircle, X, ExternalLink } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
@@ -191,12 +192,12 @@ export function RepoSyncButton({
                 )}
               </div>
               {feedback.type === "error" && feedback.message.includes("sign in") && (
-                <a
+                <Link
                   href="/auth/signin"
                   className="inline-flex items-center gap-1 mt-1 text-[11px] underline hover:opacity-80"
                 >
                   Go to Sign In <ExternalLink className="w-3 h-3" />
-                </a>
+                </Link>
               )}
             </div>
           </div>
