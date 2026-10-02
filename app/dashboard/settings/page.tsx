@@ -1,26 +1,24 @@
-import { Reveal } from "@/components/ui";
-import { Badge } from "@/components/ui";
+import { getCurrentUser } from "@/lib/session";
+import { getUserSettingsAction } from "@/actions/settings";
+import { SettingsView } from "@/components/dashboard";
 
-export default function SettingsPage() {
-  return (
-    <Reveal direction="up" delay={50}>
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h1 className="font-serif text-heading-xl font-medium tracking-tight text-ink-primary dark:text-bone">
-            Settings
-          </h1>
-          <Badge variant="outline" size="sm">
-            PHASE 42
-          </Badge>
-        </div>
-        <p className="font-sans text-body-md text-ink-secondary dark:text-bone-secondary max-w-2xl">
-          Configure your portfolio slug, theme preferences, and display toggles. Dashboard settings
-          are coming in Phase 42.
-        </p>
-        <div className="hairline-all p-8 text-center font-mono text-mono-sm text-ink-muted dark:text-bone-muted tracking-wider uppercase">
-          § DASHBOARD SETTINGS — PENDING IMPLEMENTATION
-        </div>
+export const metadata = {
+  title: "Settings | AI GitHub Portfolio Generator",
+  description: "Configure portfolio slug, theme appearance, and published section toggles.",
+};
+
+export default async function SettingsPage() {
+  const [user, settingsResult] = await Promise.all([getCurrentUser(), getUserSettingsAction()]);
+
+  if (!settingsResult.success) {
+    return (
+      <div className="p-8 border border-hairline dark:border-obsidian-border bg-paper-canvas dark:bg-obsidian-card font-mono text-mono-sm text-rose-600 dark:text-telemetry-rose">
+        § FAILED TO LOAD SETTINGS: {settingsResult.error}
       </div>
-    </Reveal>
+    );
+  }
+
+  return (
+    <SettingsView initialSettings={settingsResult.settings} isAuthenticated={Boolean(user?.id)} />
   );
 }
