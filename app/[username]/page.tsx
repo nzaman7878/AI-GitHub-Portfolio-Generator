@@ -1,21 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Star,
-  GitFork,
-  ExternalLink,
-  MapPin,
-  Globe,
-  Terminal,
-  Sparkles,
-  ArrowUpRight,
-  Activity,
-  FolderGit2,
-} from "lucide-react";
+import { Star, GitFork, Sparkles, ArrowUpRight, FolderGit2 } from "lucide-react";
 import { getPublicPortfolioData } from "@/lib/portfolio";
 import { GitHubIcon } from "@/components/auth/github-icon";
+import { PortfolioHero } from "@/components/portfolio";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -132,194 +121,23 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. HERO PROFILE HEADER
+          2. PORTFOLIO HERO SECTION (ASYMMETRIC EDITORIAL DOSSIER)
           ───────────────────────────────────────────────────────────── */}
-      <section className="relative border-b border-paper-line dark:border-obsidian-line bg-paper-canvas dark:bg-obsidian-void py-12 sm:py-20 px-4 sm:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-start gap-8 md:gap-12">
-            {/* Avatar block with monograph framing */}
-            {user.avatarUrl && (
-              <div className="relative shrink-0 w-28 h-28 sm:w-36 sm:h-36 border border-paper-line dark:border-obsidian-line p-1.5 bg-paper-card dark:bg-obsidian-surface shadow-sm">
-                <div className="relative w-full h-full overflow-hidden bg-paper-muted dark:bg-obsidian-card">
-                  <Image
-                    src={user.avatarUrl}
-                    alt={user.name || user.username}
-                    fill
-                    sizes="(max-width: 640px) 112px, 144px"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-                {/* Monograph corner tags */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-signal-accent" />
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-signal-accent" />
-              </div>
-            )}
-
-            {/* Profile Meta & Details */}
-            <div className="flex-1 min-w-0 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-mono text-xs uppercase tracking-widest text-signal-accent font-semibold px-2 py-0.5 border border-signal-accent/30 bg-signal-accent/5">
-                  THE TECHNICAL MONOGRAPH
-                </span>
-                <span className="font-mono text-xs text-ink-faint dark:text-bone-faint">
-                  THEME: {user.theme.toUpperCase()}
-                </span>
-              </div>
-
-              <h1 className="font-editorial text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-ink-primary dark:text-bone">
-                {user.name || `@${user.username}`}
-              </h1>
-
-              {user.headline && (
-                <p className="font-mono text-sm sm:text-base text-signal-accent font-medium leading-relaxed">
-                  {user.headline}
-                </p>
-              )}
-
-              {displayPreferences.showBio && user.bio && (
-                <p className="text-sm sm:text-base text-ink-secondary dark:text-bone-muted max-w-3xl leading-relaxed">
-                  {user.bio}
-                </p>
-              )}
-
-              {/* Badges / Links strip */}
-              <div className="flex flex-wrap items-center gap-y-2 gap-x-5 pt-2 font-mono text-xs text-ink-muted dark:text-bone-muted">
-                {user.location && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-signal-accent" />
-                    {user.location}
-                  </span>
-                )}
-
-                {user.websiteUrl && (
-                  <a
-                    href={
-                      user.websiteUrl.startsWith("http")
-                        ? user.websiteUrl
-                        : `https://${user.websiteUrl}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-ink-primary dark:text-bone hover:text-signal-accent transition-colors"
-                  >
-                    <Globe className="w-3.5 h-3.5 text-signal-accent" />
-                    <span>{user.websiteUrl.replace(/^https?:\/\//, "")}</span>
-                    <ExternalLink className="w-3 h-3 text-ink-faint dark:text-bone-faint" />
-                  </a>
-                )}
-
-                <span className="inline-flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-signal-accent" />
-                  <span>/{user.portfolioSlug || user.username}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PortfolioHero
+        user={user}
+        stats={stats}
+        caseStudiesCount={caseStudies.length}
+        displayPreferences={displayPreferences}
+      />
 
       {/* ─────────────────────────────────────────────────────────────
-          3. TELEMETRY & STATS STRIP (IF SHOWSTATS)
-          ───────────────────────────────────────────────────────────── */}
-      {displayPreferences.showStats && (
-        <section className="border-b border-paper-line dark:border-obsidian-line bg-paper-card/40 dark:bg-obsidian-surface/40 py-6 px-4 sm:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 divide-x divide-paper-line dark:divide-obsidian-line">
-              <div className="px-2 sm:px-4 space-y-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-ink-muted dark:text-bone-muted">
-                  Curated Repos
-                </span>
-                <p className="font-editorial text-2xl sm:text-3xl font-light text-ink-primary dark:text-bone">
-                  {stats.totalRepos}
-                </p>
-              </div>
-
-              <div className="px-2 sm:px-4 space-y-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-ink-muted dark:text-bone-muted">
-                  Total Stars
-                </span>
-                <p className="font-editorial text-2xl sm:text-3xl font-light text-signal-accent">
-                  ★ {stats.totalStars.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="px-2 sm:px-4 space-y-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-ink-muted dark:text-bone-muted">
-                  Total Forks
-                </span>
-                <p className="font-editorial text-2xl sm:text-3xl font-light text-ink-primary dark:text-bone">
-                  {stats.totalForks.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="px-2 sm:px-4 space-y-1">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-ink-muted dark:text-bone-muted">
-                  Case Studies
-                </span>
-                <p className="font-editorial text-2xl sm:text-3xl font-light text-ink-primary dark:text-bone">
-                  {caseStudies.length}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. TECH STACK & LANGUAGE METRICS (IF SHOWTECHSTACK)
-          ───────────────────────────────────────────────────────────── */}
-      {displayPreferences.showTechStack && stats.languages.length > 0 && (
-        <section className="border-b border-paper-line dark:border-obsidian-line py-8 px-4 sm:px-8 bg-paper-canvas dark:bg-obsidian-void">
-          <div className="max-w-6xl mx-auto space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-mono text-xs uppercase tracking-widest text-ink-muted dark:text-bone-muted flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-signal-accent" />
-                <span>Compiler & Language Distribution</span>
-              </h2>
-              <span className="font-mono text-[11px] text-ink-faint dark:text-bone-faint">
-                GITHUB TELEMETRY
-              </span>
-            </div>
-
-            {/* Language distribution bar */}
-            <div className="h-2 w-full flex overflow-hidden border border-paper-line dark:border-obsidian-line bg-paper-muted dark:bg-obsidian-surface">
-              {stats.languages.map((lang) => (
-                <div
-                  key={lang.name}
-                  style={{
-                    width: `${lang.percentage}%`,
-                    backgroundColor: lang.color || "#4f46e5",
-                  }}
-                  title={`${lang.name}: ${lang.percentage}%`}
-                />
-              ))}
-            </div>
-
-            {/* Language Chips */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-xs">
-              {stats.languages.map((lang) => (
-                <div key={lang.name} className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: lang.color || "#888" }}
-                  />
-                  <span className="text-ink-primary dark:text-bone font-medium">{lang.name}</span>
-                  <span className="text-ink-muted dark:text-bone-muted text-[11px]">
-                    {lang.percentage}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          5. PUBLISHED CASE STUDIES (IF SHOWCASESTUDIES)
+          3. PUBLISHED CASE STUDIES (IF SHOWCASESTUDIES)
           ───────────────────────────────────────────────────────────── */}
       {displayPreferences.showCaseStudies && (
-        <section className="py-12 sm:py-16 px-4 sm:px-8 border-b border-paper-line dark:border-obsidian-line">
+        <section
+          id="case-studies"
+          className="py-12 sm:py-16 px-4 sm:px-8 border-b border-paper-line dark:border-obsidian-line"
+        >
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex items-center justify-between border-b border-paper-line dark:border-obsidian-line pb-4">
               <div>
