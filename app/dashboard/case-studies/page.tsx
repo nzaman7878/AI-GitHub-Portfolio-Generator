@@ -1,26 +1,38 @@
-import { Reveal } from "@/components/ui";
-import { Badge } from "@/components/ui";
+import { getCurrentUser } from "@/lib/session";
+import { getAllUserCaseStudiesAction } from "@/actions/generate";
+import { CaseStudyEditor } from "@/components/dashboard";
+import type { UserCaseStudyItem } from "@/actions/generate";
 
-export default function CaseStudiesPage() {
+export const metadata = {
+  title: "Case Studies | AI GitHub Portfolio Generator",
+  description: "Preview, edit, and configure AI-generated engineering case study dossiers.",
+};
+
+interface CaseStudiesPageProps {
+  searchParams: Promise<{ repo?: string }>;
+}
+
+export default async function CaseStudiesPage({ searchParams }: CaseStudiesPageProps) {
+  const params = await searchParams;
+  const user = await getCurrentUser();
+  let items: UserCaseStudyItem[] = [];
+
+  if (user?.id) {
+    try {
+      const res = await getAllUserCaseStudiesAction();
+      if (res.success) {
+        items = res.items;
+      }
+    } catch {
+      items = [];
+    }
+  }
+
   return (
-    <Reveal direction="up" delay={50}>
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h1 className="font-serif text-heading-xl font-medium tracking-tight text-ink-primary dark:text-bone">
-            Case Studies
-          </h1>
-          <Badge variant="outline" size="sm">
-            PHASE 40
-          </Badge>
-        </div>
-        <p className="font-sans text-body-md text-ink-secondary dark:text-bone-secondary max-w-2xl">
-          AI-generated engineering dossiers and case study previews will appear here. Preview, edit,
-          and manage your synthesized technical narratives.
-        </p>
-        <div className="hairline-all p-8 text-center font-mono text-mono-sm text-ink-muted dark:text-bone-muted tracking-wider uppercase">
-          § CASE STUDY PREVIEW + EDIT — PENDING IMPLEMENTATION
-        </div>
-      </div>
-    </Reveal>
+    <CaseStudyEditor
+      initialItems={items}
+      preselectedRepoId={params.repo}
+      isAuthenticated={Boolean(user?.id)}
+    />
   );
 }

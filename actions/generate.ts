@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
@@ -165,6 +166,152 @@ export async function generateBatchCaseStudiesAction(
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Failed to execute batch case study generation.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export interface UpdateCaseStudyInput {
+  caseStudyId: string;
+  title?: string;
+  subtitle?: string | null;
+  summary?: string;
+  highlights?: string[];
+  isPublished?: boolean;
+}
+
+export type UpdateCaseStudyResult =
+  | {
+      success: true;
+      caseStudy: SerializedCaseStudy;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Updates editable fields of a case study (title, subtitle, summary, highlights, isPublished)
+ * verifying repository ownership and revalidating cache paths.
+ */
+export async function updateCaseStudyAction(
+  input: UpdateCaseStudyInput,
+): Promise<UpdateCaseStudyResult> {
+  try {
+    const user = await requireAuth();
+
+    // Verify ownership via repo
+    const existing = await db.caseStudy.findFirst({
+      where: {
+        id: input.caseStudyId,
+        repo: {
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!existing) {
+      return {
+        success: false,
+        error: "Case study not found or unauthorized.",
+      };
+    }
+
+    const updated = await db.caseStudy.update({
+      where: { id: input.caseStudyId },
+      data: {
+        ...(input.title !== undefined && { title: input.title }),
+        ...(input.subtitle !== undefined && { subtitle: input.subtitle }),
+        ...(input.summary !== undefined && { summary: input.summary }),
+        ...(input.highlights !== undefined && { highlights: input.highlights }),
+        ...(input.isPublished !== undefined && { isPublished: input.isPublished }),
+      },
+    });
+
+    revalidatePath("/dashboard/case-studies");
+    revalidatePath("/dashboard/repos");
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      caseStudy: serializeCaseStudy(updated),
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update case study.";
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+export interface UserCaseStudyItem {
+  repo: {
+    id: string;
+    name: string;
+    fullName: string;
+    language: string | null;
+    primaryLanguage: string | null;
+    stars: number;
+    description: string | null;
+    htmlUrl: string;
+    topics: string[];
+    commitCount: number;
+    lastPushedAt: string | null;
+  };
+  caseStudy: SerializedCaseStudy | null;
+}
+
+export type GetAllUserCaseStudiesResult =
+  | {
+      success: true;
+      items: UserCaseStudyItem[];
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+/**
+ * Server Action: Retrieves all repositories and their associated case study records for the current user.
+ */
+export async function getAllUserCaseStudiesAction(): Promise<GetAllUserCaseStudiesResult> {
+  try {
+    const user = await requireAuth();
+
+    const repos = await db.repo.findMany({
+      where: { userId: user.id },
+      include: {
+        caseStudy: true,
+      },
+      orderBy: [{ isSelected: "desc" }, { stars: "desc" }],
+    });
+
+    return {
+      success: true,
+      items: repos.map((r) => ({
+        repo: {
+          id: r.id,
+          name: r.name,
+          fullName: r.fullName,
+          language: r.language,
+          primaryLanguage: r.primaryLanguage,
+          stars: r.stars,
+          description: r.description,
+          htmlUrl: r.htmlUrl,
+          topics: r.topics,
+          commitCount: r.commitCount,
+          lastPushedAt: r.lastPushedAt ? r.lastPushedAt.toISOString() : null,
+        },
+        caseStudy: r.caseStudy ? serializeCaseStudy(r.caseStudy) : null,
+      })),
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to load case studies.";
 
     return {
       success: false,

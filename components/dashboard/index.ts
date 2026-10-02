@@ -10,3 +10,4 @@ export {
   type RepoSyncButtonProps,
   type SyncFeedbackState,
 } from "./repo-sync-button";
+export { CaseStudyEditor, type CaseStudyEditorProps } from "./case-study-editor";
