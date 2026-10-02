@@ -9,6 +9,7 @@ import {
   X,
   ExternalLink,
   Sparkles,
+  Loader2,
   RotateCcw,
   Plus,
   Trash2,
@@ -611,6 +612,24 @@ export function CaseStudyEditor({
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Link>
+
+                  {/* Regenerate AI Dossier Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateCaseStudy()}
+                    disabled={isGenerating || isSaving}
+                    leftIcon={
+                      isGenerating ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-terracotta dark:text-telemetry-cyan" />
+                      )
+                    }
+                    title="Regenerate case study using Gemini AI analysis"
+                  >
+                    {isGenerating ? "Synthesizing..." : "Regenerate"}
+                  </Button>
 
                   {/* Toggle Edit Mode */}
                   <Button

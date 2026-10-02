@@ -144,3 +144,17 @@ export interface BatchGenerateOptions {
     itemResult?: BatchItemResult,
   ) => void | Promise<void>;
 }
+
+export interface GeminiQuotaStatusSerialized {
+  rpmLimit: number;
+  rpmUsed: number;
+  rpmRemaining: number;
+  rpdLimit: number;
+  rpdUsed: number;
+  rpdRemaining: number;
+  resetMinuteDate: string;
+  resetDayDate: string;
+  isDailyExhausted: boolean;
+  isMinuteExhausted: boolean;
+  estimatedWaitMs: number;
+}

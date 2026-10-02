@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAuth } from "@/lib/session";
+import { requireAuth, getCurrentUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
   generateCaseStudyForRepo,
@@ -9,7 +9,7 @@ import {
   type GenerateCaseStudyResponse,
 } from "@/lib/ai/generate";
 import { getGeminiQuotaUsage } from "@/lib/ai/rate-limit";
-import type { SerializedCaseStudy } from "@/types/ai";
+import type { SerializedCaseStudy, GeminiQuotaStatusSerialized } from "@/types/ai";
 
 export interface GenerateCaseStudyActionParams {
   repoId: string;
@@ -80,19 +80,7 @@ export async function getRepoCaseStudyAction(repoId: string): Promise<GetCaseStu
 export type GetQuotaStatusResult =
   | {
       success: true;
-      quota: {
-        rpmLimit: number;
-        rpmUsed: number;
-        rpmRemaining: number;
-        rpdLimit: number;
-        rpdUsed: number;
-        rpdRemaining: number;
-        resetMinuteDate: string;
-        resetDayDate: string;
-        isDailyExhausted: boolean;
-        isMinuteExhausted: boolean;
-        estimatedWaitMs: number;
-      };
+      quota: GeminiQuotaStatusSerialized;
     }
   | {
       success: false;
@@ -104,8 +92,8 @@ export type GetQuotaStatusResult =
  */
 export async function getGeminiQuotaStatusAction(): Promise<GetQuotaStatusResult> {
   try {
-    const user = await requireAuth();
-    const quota = await getGeminiQuotaUsage(user.id);
+    const user = await getCurrentUser();
+    const quota = await getGeminiQuotaUsage(user?.id);
 
     return {
       success: true,

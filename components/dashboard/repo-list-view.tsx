@@ -13,6 +13,9 @@ import {
   AlertCircle,
   FolderGit2,
   CheckCircle2,
+  Sparkles,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,11 +26,16 @@ import {
   bulkToggleRepoSelectionAction,
   getUserRepositoriesAction,
 } from "@/actions/repos";
+import { generateCaseStudyAction, getGeminiQuotaStatusAction } from "@/actions/generate";
 import { RepoSyncButton } from "./repo-sync-button";
+import { QuotaDisplay } from "./quota-display";
+import { BatchGeneratorModal } from "./batch-generator-modal";
 import type { RepoWithStatus } from "@/types/github";
+import type { GeminiQuotaStatusSerialized } from "@/types/ai";
 
 export interface RepoListViewProps {
   initialRepos?: RepoWithStatus[];
+  initialQuota?: GeminiQuotaStatusSerialized | null;
   isAuthenticated?: boolean;
   username?: string | null;
   lastSyncedAt?: string | null;
@@ -202,6 +210,7 @@ type StatusFilter = "all" | "selected" | "unselected";
 
 export function RepoListView({
   initialRepos = [],
+  initialQuota = null,
   isAuthenticated = false,
   username,
   lastSyncedAt: serverLastSyncedAt,
@@ -225,6 +234,89 @@ export function RepoListView({
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // Generation states
+  const [generatingRepoIds, setGeneratingRepoIds] = React.useState<Set<string>>(new Set());
+  const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false);
+  const [currentQuota, setCurrentQuota] = React.useState<GeminiQuotaStatusSerialized | null>(
+    initialQuota,
+  );
+  const [generationFeedback, setGenerationFeedback] = React.useState<{
+    type: "success" | "error";
+    message: string;
+    repoId?: string;
+  } | null>(null);
+
+  // Sync quota with prop
+  const [prevInitialQuota, setPrevInitialQuota] = React.useState(initialQuota);
+  if (initialQuota !== prevInitialQuota) {
+    setPrevInitialQuota(initialQuota);
+    if (initialQuota) {
+      setCurrentQuota(initialQuota);
+    }
+  }
+
+  // Generate or Regenerate single repo case study
+  const handleGenerateSingle = async (repo: RepoWithStatus, forceRegenerate: boolean = false) => {
+    setGeneratingRepoIds((prev) => new Set(prev).add(repo.id));
+    setGenerationFeedback(null);
+
+    try {
+      if (isDemo || repo.id.startsWith("demo-")) {
+        // Simulated latency for demo
+        await new Promise((r) => setTimeout(r, 900));
+        setRepos((prev) => prev.map((r) => (r.id === repo.id ? { ...r, hasCaseStudy: true } : r)));
+        setGenerationFeedback({
+          type: "success",
+          message: `Successfully synthesized engineering dossier for ${repo.name}.`,
+          repoId: repo.id,
+        });
+      } else {
+        const res = await generateCaseStudyAction({
+          repoId: repo.id,
+          forceRegenerate,
+        });
+
+        if (res.success) {
+          setRepos((prev) =>
+            prev.map((r) => (r.id === repo.id ? { ...r, hasCaseStudy: true } : r)),
+          );
+          setGenerationFeedback({
+            type: "success",
+            message: `Case study dossier ready for ${repo.name} (${res.cached ? "preserved fresh cache" : "synthesized via Gemini AI"}).`,
+            repoId: repo.id,
+          });
+
+          // Refresh quota
+          try {
+            const qRes = await getGeminiQuotaStatusAction();
+            if (qRes.success) setCurrentQuota(qRes.quota);
+          } catch {
+            // Handled
+          }
+        } else {
+          setGenerationFeedback({
+            type: "error",
+            message: res.error || `Failed to generate case study for ${repo.name}.`,
+            repoId: repo.id,
+          });
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Generation failed.";
+      setGenerationFeedback({
+        type: "error",
+        message: msg,
+        repoId: repo.id,
+      });
+    } finally {
+      setGeneratingRepoIds((prev) => {
+        const next = new Set(prev);
+        next.delete(repo.id);
+        return next;
+      });
+    }
+  };
 
   // Sync state with props
   const [prevInitialRepos, setPrevInitialRepos] = React.useState(initialRepos);
@@ -418,6 +510,7 @@ export function RepoListView({
 
             {/* Right: Telemetry Quick Counters & Sync Action */}
             <div className="flex flex-wrap items-center gap-4 lg:self-center">
+              <QuotaDisplay compact initialQuota={currentQuota} onQuotaUpdate={setCurrentQuota} />
               <div className="hairline-all bg-paper-sheet dark:bg-obsidian-panel px-4 py-2.5 flex items-center gap-6">
                 <div>
                   <span className="block font-mono text-[10px] text-ink-muted dark:text-bone-muted tracking-wider uppercase">
@@ -489,6 +582,46 @@ export function RepoListView({
           )}
         </div>
       </Reveal>
+
+      {/* AI Generation Quota & Telemetry Panel */}
+      <Reveal direction="up" delay={75}>
+        <QuotaDisplay initialQuota={currentQuota} onQuotaUpdate={setCurrentQuota} />
+      </Reveal>
+
+      {/* Single Generation Feedback Alert */}
+      {generationFeedback && (
+        <div
+          className={`p-3.5 border font-mono text-mono-sm flex items-center justify-between gap-3 ${
+            generationFeedback.type === "success"
+              ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-telemetry-emerald/40 text-emerald-800 dark:text-telemetry-emerald"
+              : "bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-telemetry-rose/40 text-rose-800 dark:text-telemetry-rose"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {generationFeedback.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{generationFeedback.message}</span>
+            {generationFeedback.repoId && generationFeedback.type === "success" && (
+              <Link
+                href={`/dashboard/case-studies?repo=${generationFeedback.repoId}`}
+                className="underline font-semibold ml-2 inline-flex items-center gap-1"
+              >
+                Open Dossier &rarr;
+              </Link>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setGenerationFeedback(null)}
+            className="p-1 hover:opacity-75 transition-opacity"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Control Bar: Search, Language Filter, Status Tabs, Sorting */}
       <Reveal direction="up" delay={100}>
@@ -596,7 +729,7 @@ export function RepoListView({
             </div>
 
             {/* Bulk Selection Actions */}
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
               <span className="font-mono text-mono-xs text-ink-muted dark:text-bone-muted uppercase mr-1">
                 Bulk:
               </span>
@@ -616,6 +749,19 @@ export function RepoListView({
               >
                 Deselect Filtered
               </button>
+              <div className="hairline-l pl-2 ml-1">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsBatchModalOpen(true)}
+                  disabled={selectedCount === 0}
+                  className="h-7 px-3 text-xs font-mono"
+                  title="Run sequential AI generation on all selected repositories"
+                >
+                  <Sparkles className="w-3 h-3 mr-1.5" />
+                  Batch Generate ({selectedCount})
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -633,7 +779,7 @@ export function RepoListView({
             <div className="hidden sm:flex items-center gap-6">
               <span className="w-24 text-right">Metrics</span>
               <span className="w-24 text-right">Last Push</span>
-              <span className="w-28 text-center">Status</span>
+              <span className="w-56 text-right">Dossier / Controls</span>
             </div>
           </div>
 
@@ -794,20 +940,49 @@ export function RepoListView({
                         </span>
                       </div>
 
-                      {/* Dossier status badge or action */}
-                      <div className="w-28 text-right">
+                      {/* Dossier status badge & generation controls */}
+                      <div className="w-56 text-right flex items-center justify-end gap-2">
                         {repo.hasCaseStudy ? (
-                          <Link
-                            href={`/dashboard/case-studies?repo=${repo.id}`}
-                            className="inline-flex items-center gap-1 font-mono text-[10px] text-terracotta dark:text-telemetry-cyan hover:underline tracking-wider uppercase"
-                          >
-                            <FileText className="w-3 h-3" />
-                            VIEW DOSSIER
-                          </Link>
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleGenerateSingle(repo, true)}
+                              disabled={generatingRepoIds.has(repo.id)}
+                              className="h-7 px-2 font-mono text-[10px] tracking-wider uppercase"
+                              title="Regenerate case study using Gemini AI"
+                            >
+                              {generatingRepoIds.has(repo.id) ? (
+                                <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                              ) : (
+                                <RefreshCw className="w-3 h-3 mr-1 text-terracotta dark:text-telemetry-cyan" />
+                              )}
+                              {generatingRepoIds.has(repo.id) ? "SYNTHESIZING" : "REGENERATE"}
+                            </Button>
+                            <Link
+                              href={`/dashboard/case-studies?repo=${repo.id}`}
+                              className="inline-flex items-center gap-1 font-mono text-[10px] text-terracotta dark:text-telemetry-cyan hover:underline tracking-wider uppercase px-1.5 py-1 shrink-0"
+                            >
+                              <FileText className="w-3 h-3" />
+                              VIEW
+                            </Link>
+                          </>
                         ) : (
-                          <span className="font-mono text-[10px] text-ink-muted dark:text-bone-muted uppercase tracking-wider">
-                            NO DOSSIER
-                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleGenerateSingle(repo, false)}
+                            disabled={generatingRepoIds.has(repo.id)}
+                            className="h-7 px-2.5 font-mono text-[10px] tracking-wider uppercase border-terracotta/40 dark:border-telemetry-cyan/40 text-terracotta dark:text-telemetry-cyan hover:bg-terracotta/10 dark:hover:bg-telemetry-cyan/10"
+                            title="Generate recruiter-ready case study using Gemini AI"
+                          >
+                            {generatingRepoIds.has(repo.id) ? (
+                              <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                            ) : (
+                              <Sparkles className="w-3 h-3 mr-1" />
+                            )}
+                            {generatingRepoIds.has(repo.id) ? "SYNTHESIZING" : "GENERATE"}
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -834,6 +1009,26 @@ export function RepoListView({
           </div>
         </div>
       </Reveal>
+
+      {/* Batch Generation Modal */}
+      <BatchGeneratorModal
+        isOpen={isBatchModalOpen}
+        onClose={() => setIsBatchModalOpen(false)}
+        selectedRepos={repos.filter((r) => r.isSelected)}
+        onRepoStatusUpdate={(repoId, hasCs) => {
+          setRepos((prev) =>
+            prev.map((r) => (r.id === repoId ? { ...r, hasCaseStudy: hasCs } : r)),
+          );
+        }}
+        onQuotaRefresh={async () => {
+          try {
+            const res = await getGeminiQuotaStatusAction();
+            if (res.success) setCurrentQuota(res.quota);
+          } catch {
+            // Handled
+          }
+        }}
+      />
     </div>
   );
 }

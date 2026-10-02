@@ -11,3 +11,5 @@ export {
   type SyncFeedbackState,
 } from "./repo-sync-button";
 export { CaseStudyEditor, type CaseStudyEditorProps } from "./case-study-editor";
+export { QuotaDisplay, type QuotaDisplayProps } from "./quota-display";
+export { BatchGeneratorModal, type BatchGeneratorModalProps } from "./batch-generator-modal";
