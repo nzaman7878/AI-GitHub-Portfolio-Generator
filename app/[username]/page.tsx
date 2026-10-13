@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Star, GitFork, Sparkles, ArrowUpRight, FolderGit2 } from "lucide-react";
 import { getPublicPortfolioData } from "@/lib/portfolio";
 import { GitHubIcon } from "@/components/auth/github-icon";
-import { PortfolioHero, CaseStudyGrid } from "@/components/portfolio";
+import { PortfolioHero, CaseStudyGrid, EmptyPortfolioState } from "@/components/portfolio";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -65,6 +65,11 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
   }
 
   const { user, caseStudies, repos, stats, displayPreferences } = data;
+
+  // Empty state: when user has connected but not generated any case studies or selected repos
+  if (caseStudies.length === 0 && repos.length === 0) {
+    return <EmptyPortfolioState user={user} />;
+  }
 
   return (
     <main className="min-h-screen bg-paper-canvas text-ink-primary dark:bg-obsidian-void dark:text-bone selection:bg-signal-accent/20 flex flex-col justify-between">
