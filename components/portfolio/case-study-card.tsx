@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   FolderGit2,
   Star,
@@ -9,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   Maximize2,
+  ExternalLink,
   Layers,
   AlertTriangle,
   TrendingUp,
@@ -22,6 +24,7 @@ export interface CaseStudyCardProps {
   caseStudy: PortfolioCaseStudy;
   index: number;
   layout?: "grid" | "list";
+  portfolioSlug?: string;
   onOpenDetail?: (caseStudy: PortfolioCaseStudy) => void;
   initiallyExpanded?: boolean;
 }
@@ -30,6 +33,7 @@ export function CaseStudyCard({
   caseStudy,
   index,
   layout = "grid",
+  portfolioSlug,
   onOpenDetail,
   initiallyExpanded = false,
 }: CaseStudyCardProps) {
@@ -284,6 +288,17 @@ export function CaseStudyCard({
         </button>
 
         <div className="flex items-center gap-2">
+          {portfolioSlug && (
+            <Link
+              href={`/${portfolioSlug}/case-study/${caseStudy.repoName}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-hairline dark:border-obsidian-border bg-paper-canvas dark:bg-obsidian-panel text-ink-secondary dark:text-bone-secondary hover:border-terracotta dark:hover:border-telemetry-cyan hover:text-terracotta dark:hover:text-telemetry-cyan transition-colors"
+              title="Open full page monograph view"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-terracotta dark:text-telemetry-cyan" />
+              <span className="hidden sm:inline">Deep Dive</span>
+            </Link>
+          )}
+
           {onOpenDetail && (
             <button
               type="button"
@@ -292,7 +307,7 @@ export function CaseStudyCard({
               title="Open full monograph dossier modal"
             >
               <Maximize2 className="w-3.5 h-3.5 text-terracotta dark:text-telemetry-cyan" />
-              <span className="hidden sm:inline">Full Monograph</span>
+              <span className="hidden sm:inline">Modal Spec</span>
             </button>
           )}
 

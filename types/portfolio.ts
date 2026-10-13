@@ -28,6 +28,11 @@ export interface PortfolioCaseStudy extends GeneratedCaseStudySchema {
   generatedAt: string;
   isPublished: boolean;
   promptVersion?: string;
+  codeSnippet?: {
+    language: string;
+    filename?: string;
+    code: string;
+  };
 }
 
 export interface PortfolioRepoItem {

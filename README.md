@@ -89,7 +89,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 - [x] **Phase 43** — Portfolio page route + data loading (Dynamic `/[username]` route with server-side caching)
 - [x] **Phase 44** — Portfolio hero section (Editorial header with developer biography and high-signal stats)
 - [x] **Phase 45** — Case study cards (Deep architectural preview cards with technology badges)
-- [ ] **Phase 46** — Case study detail view (Full engineering deep-dive with problem, architecture, decisions, and metrics)
+- [x] **Phase 46** — Case study detail view (Full engineering deep-dive with problem, architecture, decisions, and metrics)
 - [ ] **Phase 47** — Loading, empty, and error states (Geometric skeleton loaders, polished empty state, and error boundary)
 - [ ] **Phase 48** — OG image generation (Dynamic OpenGraph social preview images via `@vercel/og`)
 

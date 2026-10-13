@@ -8,12 +8,14 @@ import { CaseStudyDetailModal } from "./case-study-detail-modal";
 
 export interface CaseStudyGridProps {
   caseStudies: PortfolioCaseStudy[];
+  portfolioSlug?: string;
   title?: string;
   subtitle?: string;
 }
 
 export function CaseStudyGrid({
   caseStudies,
+  portfolioSlug,
   title = "Published Case Studies",
   subtitle = "§ 01. DEEP ENGINEERING SPECIFICATIONS",
 }: CaseStudyGridProps) {
@@ -204,6 +206,7 @@ export function CaseStudyGrid({
               caseStudy={cs}
               index={idx}
               layout={layout}
+              portfolioSlug={portfolioSlug}
               onOpenDetail={(study) => setActiveModalCaseStudy(study)}
             />
           ))}

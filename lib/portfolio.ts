@@ -81,6 +81,26 @@ export const DEMO_PORTFOLIO_DATA: FullPortfolioData = {
         { metric: "Throughput", value: "200k req/s" },
         { metric: "Data Loss", value: "0.00%" },
       ],
+      codeSnippet: {
+        language: "go",
+        filename: "consensus/raft_partition.go",
+        code: `// ConsensusGroup routes partition writes with Raft quorums
+type ConsensusGroup struct {
+    groupID   uint64
+    peers     []raft.Peer
+    storage   *wal.LogStorage
+    fsm       *memory.ArenaFSM
+}
+
+func (cg *ConsensusGroup) Propose(ctx context.Context, cmd []byte) error {
+    entry := raft.LogEntry{
+        Term:  cg.currentTerm,
+        Index: atomic.AddUint64(&cg.lastIndex, 1),
+        Data:  cmd,
+    }
+    return cg.raftNode.Step(ctx, entry)
+}`,
+      },
       promptVersion: "v1.0",
       generatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
       isPublished: true,
@@ -124,6 +144,25 @@ export const DEMO_PORTFOLIO_DATA: FullPortfolioData = {
         { metric: "Execution Speedup", value: "4.2x" },
         { metric: "Binary Footprint", value: "-58%" },
       ],
+      codeSnippet: {
+        language: "rust",
+        filename: "compiler/ssa_lowering.rs",
+        code: `// Lowers SSA control flow graphs into vectorized WebAssembly SIMD
+pub fn lower_ssa_to_wasm(graph: &ControlFlowGraph) -> Result<WasmModule, CompileError> {
+    let mut builder = WasmModuleBuilder::new();
+    for block in graph.basic_blocks() {
+        for instruction in block.instructions() {
+            match instruction {
+                Instruction::VectorAdd(v1, v2) => {
+                    builder.emit(Opcode::I32x4Add(v1, v2));
+                }
+                Instruction::DeadBranchElim => continue,
+            }
+        }
+    }
+    builder.finalize()
+}`,
+      },
       promptVersion: "v1.0",
       generatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
       isPublished: true,
@@ -165,6 +204,25 @@ export const DEMO_PORTFOLIO_DATA: FullPortfolioData = {
         { metric: "Concurrent Streams", value: "100,000" },
         { metric: "Dissemination Latency", value: "< 10ms" },
       ],
+      codeSnippet: {
+        language: "typescript",
+        filename: "gateway/backpressure_stream.ts",
+        code: `// Backpressure stream router managing client socket buffer watermarks
+export class BackpressureStreamRouter {
+  private activeClients = new Map<string, WebSocket>();
+
+  async broadcast(channel: string, payload: Buffer): Promise<void> {
+    const serialized = this.encodeEnvelope(channel, payload);
+    for (const [clientId, socket] of this.activeClients) {
+      if (socket.bufferedAmount > HIGH_WATERMARK_BYTES) {
+        await this.throttleClient(clientId);
+        continue;
+      }
+      socket.send(serialized);
+    }
+  }
+}`,
+      },
       promptVersion: "v1.0",
       generatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
       isPublished: true,
@@ -456,4 +514,35 @@ export async function getPublicPortfolioData(
     }
     return null;
   }
+}
+
+/**
+ * Retrieves a single case study by its ID or repository name for a specific user slug.
+ */
+export async function getPublicCaseStudy(
+  usernameOrSlug: string,
+  idOrRepoName: string,
+): Promise<{
+  user: UserPortfolioProfile;
+  caseStudy: PortfolioCaseStudy;
+  allCaseStudies: PortfolioCaseStudy[];
+} | null> {
+  const data = await getPublicPortfolioData(usernameOrSlug);
+  if (!data) return null;
+
+  const target = idOrRepoName.toLowerCase();
+  const caseStudy = data.caseStudies.find(
+    (cs) =>
+      cs.id.toLowerCase() === target ||
+      cs.repoName.toLowerCase() === target ||
+      cs.repoId.toLowerCase() === target,
+  );
+
+  if (!caseStudy) return null;
+
+  return {
+    user: data.user,
+    caseStudy,
+    allCaseStudies: data.caseStudies,
+  };
 }

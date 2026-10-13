@@ -139,7 +139,10 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
           className="py-12 sm:py-16 px-4 sm:px-8 border-b border-paper-line dark:border-obsidian-line"
         >
           <div className="max-w-6xl mx-auto">
-            <CaseStudyGrid caseStudies={caseStudies} />
+            <CaseStudyGrid
+              caseStudies={caseStudies}
+              portfolioSlug={user.portfolioSlug || user.username}
+            />
           </div>
         </section>
       )}
