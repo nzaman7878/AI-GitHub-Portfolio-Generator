@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Star, GitFork, Sparkles, ArrowUpRight, FolderGit2 } from "lucide-react";
 import { getPublicPortfolioData } from "@/lib/portfolio";
 import { GitHubIcon } from "@/components/auth/github-icon";
-import { PortfolioHero } from "@/components/portfolio";
+import { PortfolioHero, CaseStudyGrid } from "@/components/portfolio";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -138,141 +138,8 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
           id="case-studies"
           className="py-12 sm:py-16 px-4 sm:px-8 border-b border-paper-line dark:border-obsidian-line"
         >
-          <div className="max-w-6xl mx-auto space-y-8">
-            <div className="flex items-center justify-between border-b border-paper-line dark:border-obsidian-line pb-4">
-              <div>
-                <span className="font-mono text-xs uppercase tracking-widest text-signal-accent font-semibold">
-                  § 01. DEEP ENGINEERING SPECIFICATIONS
-                </span>
-                <h2 className="font-editorial text-3xl sm:text-4xl text-ink-primary dark:text-bone mt-1">
-                  Published Case Studies
-                </h2>
-              </div>
-              <span className="font-mono text-xs text-ink-muted dark:text-bone-muted">
-                [{caseStudies.length} ARCHITECTURAL MONOGRAPHS]
-              </span>
-            </div>
-
-            {caseStudies.length === 0 ? (
-              <div className="border border-dashed border-paper-line dark:border-obsidian-line p-12 text-center space-y-3">
-                <Sparkles className="w-8 h-8 mx-auto text-ink-muted dark:text-bone-muted" />
-                <p className="font-mono text-xs uppercase tracking-wider text-ink-muted dark:text-bone-muted">
-                  No case studies published yet for this vitrine.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-8">
-                {caseStudies.map((cs, idx) => (
-                  <article
-                    key={cs.id}
-                    className="border border-paper-line dark:border-obsidian-line bg-paper-card dark:bg-obsidian-surface p-6 sm:p-8 space-y-6 hover:border-signal-accent/50 transition-colors relative"
-                  >
-                    {/* Index header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-paper-line dark:border-obsidian-line pb-4 font-mono text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-signal-accent">
-                          {`CASE_STUDY_0${idx + 1} //`}
-                        </span>
-                        <a
-                          href={cs.repoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-ink-primary dark:text-bone hover:underline flex items-center gap-1 font-semibold"
-                        >
-                          <FolderGit2 className="w-3.5 h-3.5 text-signal-accent" />
-                          {cs.repoName}
-                          <ArrowUpRight className="w-3 h-3 text-ink-muted dark:text-bone-muted" />
-                        </a>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-ink-muted dark:text-bone-muted">
-                        {cs.primaryLanguage && (
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-signal-accent" />
-                            {cs.primaryLanguage}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-signal-accent" />
-                          {cs.stars}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <GitFork className="w-3.5 h-3.5" />
-                          {cs.forks}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Title & Subtitle */}
-                    <div className="space-y-2">
-                      <h3 className="font-editorial text-2xl sm:text-3xl text-ink-primary dark:text-bone leading-tight">
-                        {cs.title}
-                      </h3>
-                      {cs.subtitle && (
-                        <p className="font-mono text-xs sm:text-sm text-signal-accent">
-                          {cs.subtitle}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Summary & Problem/Approach */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                      <div className="space-y-2">
-                        <span className="font-mono text-[11px] uppercase tracking-wider text-signal-danger font-semibold">
-                          Problem Statement
-                        </span>
-                        <p className="text-xs sm:text-sm text-ink-secondary dark:text-bone-muted leading-relaxed">
-                          {cs.problemStatement}
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <span className="font-mono text-[11px] uppercase tracking-wider text-signal-success font-semibold">
-                          Architectural Solution
-                        </span>
-                        <p className="text-xs sm:text-sm text-ink-secondary dark:text-bone-muted leading-relaxed">
-                          {cs.architecture || cs.approach || cs.summary}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Impact Statement */}
-                    {cs.impact && (
-                      <div className="border-l-2 border-signal-accent pl-4 py-1.5 bg-paper-canvas/50 dark:bg-obsidian-void/50 font-mono text-xs text-ink-primary dark:text-bone leading-relaxed">
-                        <span className="font-bold text-signal-accent uppercase mr-2">Impact:</span>
-                        {cs.impact}
-                      </div>
-                    )}
-
-                    {/* Tech Stack & Key Decisions Footer */}
-                    <div className="pt-4 border-t border-paper-line dark:border-obsidian-line flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-ink-faint dark:text-bone-faint text-[11px] mr-1">
-                          STACK:
-                        </span>
-                        {cs.techStack?.slice(0, 6).map((tech) => (
-                          <span
-                            key={tech}
-                            className="px-2 py-0.5 border border-paper-line dark:border-obsidian-line bg-paper-canvas dark:bg-obsidian-card text-ink-secondary dark:text-bone-muted text-[11px]"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-
-                      {cs.keyDecisions && cs.keyDecisions.length > 0 && (
-                        <div className="text-ink-faint dark:text-bone-faint text-[11px]">
-                          <span>
-                            {cs.keyDecisions.length} ARCHITECTURAL{" "}
-                            {cs.keyDecisions.length === 1 ? "DECISION" : "DECISIONS"} DOCUMENTED
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+          <div className="max-w-6xl mx-auto">
+            <CaseStudyGrid caseStudies={caseStudies} />
           </div>
         </section>
       )}
