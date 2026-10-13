@@ -21,14 +21,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const { user } = portfolio;
-  const title = user.name
-    ? `${user.name} (@${user.username}) — Engineering Monograph`
-    : `@${user.username} — Engineering Monograph`;
+  const { user, stats, caseStudies } = portfolio;
+  const displayName = user.name || `@${user.username}`;
+  const title = `${displayName} — Engineering Monograph & Telemetry`;
   const description =
     user.headline ||
     user.bio ||
-    `Engineering portfolio, case studies, and code telemetry for @${user.username}.`;
+    `Architectural monographs, ${stats.totalRepos} repositories, and ${caseStudies.length} engineering case studies for ${displayName}.`;
+
+  const slug = user.portfolioSlug || user.username;
+  const ogImageUrl = `/api/og/${encodeURIComponent(slug)}`;
 
   return {
     title,
@@ -37,21 +39,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: "profile",
-      url: `/${user.portfolioSlug || user.username}`,
-      images: user.avatarUrl
-        ? [
-            {
-              url: user.avatarUrl,
-              alt: user.name || user.username,
-            },
-          ]
-        : [],
+      url: `/${slug}`,
+      siteName: "AI GitHub Portfolio Generator",
+      locale: "en_US",
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${displayName} — Engineering Monograph & Telemetry`,
+          type: "image/png",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: user.avatarUrl ? [user.avatarUrl] : [],
+      creator: `@${user.username}`,
+      images: [ogImageUrl],
+    },
+    other: {
+      "profile:username": user.username,
+      author: displayName,
     },
   };
 }
