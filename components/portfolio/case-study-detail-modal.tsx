@@ -88,6 +88,7 @@ export function CaseStudyDetailModal({ caseStudy, isOpen, onClose }: CaseStudyDe
               <FolderGit2 className="w-3.5 h-3.5 text-terracotta dark:text-telemetry-cyan" />
               <span>Repository</span>
               <ArrowUpRight className="w-3 h-3 text-ink-muted dark:text-bone-muted" />
+              <span className="sr-only">(opens in a new tab)</span>
             </a>
 
             <button
@@ -328,6 +329,7 @@ export function CaseStudyDetailModal({ caseStudy, isOpen, onClose }: CaseStudyDe
             >
               <span>Examine Source Code</span>
               <ExternalLink className="w-3.5 h-3.5" />
+              <span className="sr-only">(opens in a new tab)</span>
             </a>
 
             <button

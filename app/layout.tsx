@@ -63,6 +63,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-paper-canvas text-ink-primary dark:bg-obsidian-void dark:text-bone">
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <SessionProvider>
           <ThemeProvider>
             <ToastProvider>{children}</ToastProvider>

@@ -225,6 +225,18 @@ export function BatchGeneratorModal({
     setIsAborted(true);
   };
 
+  // Close on Escape key if not currently generating
+  React.useEffect(() => {
+    if (!isOpen || isGenerating) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isGenerating, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -264,6 +276,7 @@ export function BatchGeneratorModal({
             type="button"
             onClick={onClose}
             disabled={isGenerating}
+            aria-label="Close dialog"
             className="p-1.5 hairline-all text-ink-muted hover:text-ink-primary dark:hover:text-bone bg-paper-sheet dark:bg-obsidian-panel transition-colors disabled:opacity-30"
           >
             <X className="w-4 h-4" />

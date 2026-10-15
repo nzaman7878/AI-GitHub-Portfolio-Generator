@@ -82,7 +82,11 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-paper-canvas text-ink-primary dark:bg-obsidian-void dark:text-bone selection:bg-signal-accent/20 flex flex-col justify-between">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen bg-paper-canvas text-ink-primary dark:bg-obsidian-void dark:text-bone selection:bg-signal-accent/20 flex flex-col justify-between focus:outline-none"
+    >
       {/* ─────────────────────────────────────────────────────────────
           1. TOP NAVIGATION / TELEMETRY RUNTIME STRIP
           ───────────────────────────────────────────────────────────── */}
@@ -123,6 +127,7 @@ export default async function PublicPortfolioPage({ params }: PageProps) {
               <GitHubIcon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">GitHub</span>
               <ArrowUpRight className="w-3 h-3 text-ink-muted dark:text-bone-muted" />
+              <span className="sr-only">(opens GitHub profile in a new tab)</span>
             </a>
 
             <Link

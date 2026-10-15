@@ -237,10 +237,12 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
               <Link
                 href={`/${slug || initialSettings.username}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 font-mono text-mono-xs uppercase tracking-wider hairline-all bg-paper-sheet dark:bg-obsidian-panel hover:bg-paper-elevated dark:hover:bg-obsidian-void text-ink-primary dark:text-bone transition-colors"
               >
                 <span>Live Portfolio</span>
                 <ExternalLink className="w-3.5 h-3.5 text-terracotta dark:text-telemetry-cyan" />
+                <span className="sr-only">(opens in a new tab)</span>
               </Link>
             </div>
           </div>
@@ -463,14 +465,24 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
 
             {/* Mode Selectors: Light / Dark / System */}
             <div className="space-y-3">
-              <span className="font-mono text-mono-xs text-ink-secondary dark:text-bone-secondary uppercase tracking-wider font-semibold block">
+              <span
+                id="theme-mode-label"
+                className="font-mono text-mono-xs text-ink-secondary dark:text-bone-secondary uppercase tracking-wider font-semibold block"
+              >
                 Interface Mode
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div
+                role="radiogroup"
+                aria-labelledby="theme-mode-label"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              >
                 {/* Light Mode Card */}
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={selectedThemeMode === "light"}
+                  aria-label="Archival Paper Light mode"
                   onClick={() => {
                     setSelectedThemeMode("light");
                     setThemeMode("light");
@@ -513,6 +525,9 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
                 {/* Dark Mode Card */}
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={selectedThemeMode === "dark"}
+                  aria-label="Obsidian Telemetry Dark mode"
                   onClick={() => {
                     setSelectedThemeMode("dark");
                     setThemeMode("dark");
@@ -555,6 +570,9 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
                 {/* System Mode Card */}
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={selectedThemeMode === "system"}
+                  aria-label="Device System Sync mode"
                   onClick={() => {
                     setSelectedThemeMode("system");
                     setThemeMode("system");
@@ -598,11 +616,18 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
 
             {/* Design Direction Options */}
             <div className="space-y-3 pt-3 hairline-t">
-              <span className="font-mono text-mono-xs text-ink-secondary dark:text-bone-secondary uppercase tracking-wider font-semibold block">
+              <span
+                id="archetype-label"
+                className="font-mono text-mono-xs text-ink-secondary dark:text-bone-secondary uppercase tracking-wider font-semibold block"
+              >
                 Design Architecture Archetype
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div
+                role="radiogroup"
+                aria-labelledby="archetype-label"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+              >
                 {[
                   {
                     id: "editorial" as DesignTheme,
@@ -629,6 +654,9 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
                     <button
                       key={archetype.id}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={archetype.name}
                       onClick={() => setSelectedDesignTheme(archetype.id)}
                       className={`p-3.5 text-left border transition-all cursor-pointer ${
                         isSelected
@@ -729,6 +757,7 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
                       type="button"
                       role="switch"
                       aria-checked={isEnabled}
+                      aria-label={`Toggle visibility of ${section.title}`}
                       onClick={() => handleToggleSection(section.key)}
                       className={`relative w-12 h-6 border transition-colors cursor-pointer rounded-none shrink-0 ${
                         isEnabled

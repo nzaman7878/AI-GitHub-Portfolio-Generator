@@ -649,13 +649,15 @@ export function RepoListView({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by repository name, description, or topic..."
+                aria-label="Search repositories by name, description, or topic"
                 className="w-full h-10 pl-9 pr-9 text-xs font-mono bg-paper-sheet dark:bg-obsidian-void text-ink-primary dark:text-bone border border-hairline dark:border-obsidian-border rounded-none outline-none focus:border-ink-primary dark:focus:border-telemetry-cyan transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink-primary dark:hover:text-bone"
+                  aria-label="Clear repository search query"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink-primary dark:hover:text-bone cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -666,10 +668,15 @@ export function RepoListView({
             <div className="flex flex-wrap items-center gap-3">
               {/* Language Filter */}
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-mono-xs text-ink-muted dark:text-bone-muted uppercase">
+                <label
+                  htmlFor="repo-language-filter"
+                  className="font-mono text-mono-xs text-ink-muted dark:text-bone-muted uppercase cursor-pointer"
+                >
                   Lang:
-                </span>
+                </label>
                 <select
+                  id="repo-language-filter"
+                  aria-label="Filter repositories by programming language"
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
                   className="h-9 px-2.5 text-xs font-mono bg-paper-sheet dark:bg-obsidian-void text-ink-primary dark:text-bone border border-hairline dark:border-obsidian-border rounded-none cursor-pointer outline-none focus:border-ink-primary dark:focus:border-telemetry-cyan"
@@ -685,10 +692,15 @@ export function RepoListView({
 
               {/* Sort By */}
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-mono-xs text-ink-muted dark:text-bone-muted uppercase">
+                <label
+                  htmlFor="repo-sort-by"
+                  className="font-mono text-mono-xs text-ink-muted dark:text-bone-muted uppercase cursor-pointer"
+                >
                   Sort:
-                </span>
+                </label>
                 <select
+                  id="repo-sort-by"
+                  aria-label="Sort repositories by criteria"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                   className="h-9 px-2.5 text-xs font-mono bg-paper-sheet dark:bg-obsidian-void text-ink-primary dark:text-bone border border-hairline dark:border-obsidian-border rounded-none cursor-pointer outline-none focus:border-ink-primary dark:focus:border-telemetry-cyan"
@@ -705,11 +717,16 @@ export function RepoListView({
           {/* Sub-bar: Status Tabs & Bulk Action Controls */}
           <div className="hairline-t pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Inclusion Status Filter Tabs */}
-            <div className="flex items-center gap-1">
+            <div
+              role="group"
+              aria-label="Filter repositories by inclusion status"
+              className="flex items-center gap-1"
+            >
               <button
                 type="button"
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors ${
+                aria-pressed={statusFilter === "all"}
+                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-ink-primary text-paper-canvas dark:bg-bone dark:text-obsidian-void font-semibold"
                     : "text-ink-secondary dark:text-bone-secondary hover:bg-paper-sheet dark:hover:bg-obsidian-panel"
@@ -720,7 +737,8 @@ export function RepoListView({
               <button
                 type="button"
                 onClick={() => setStatusFilter("selected")}
-                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors flex items-center gap-1.5 ${
+                aria-pressed={statusFilter === "selected"}
+                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors flex items-center gap-1.5 cursor-pointer ${
                   statusFilter === "selected"
                     ? "bg-ink-primary text-paper-canvas dark:bg-bone dark:text-obsidian-void font-semibold"
                     : "text-ink-secondary dark:text-bone-secondary hover:bg-paper-sheet dark:hover:bg-obsidian-panel"
@@ -732,7 +750,8 @@ export function RepoListView({
               <button
                 type="button"
                 onClick={() => setStatusFilter("unselected")}
-                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors ${
+                aria-pressed={statusFilter === "unselected"}
+                className={`px-3 py-1 font-mono text-mono-xs tracking-wider uppercase transition-colors cursor-pointer ${
                   statusFilter === "unselected"
                     ? "bg-ink-primary text-paper-canvas dark:bg-bone dark:text-obsidian-void font-semibold"
                     : "text-ink-secondary dark:text-bone-secondary hover:bg-paper-sheet dark:hover:bg-obsidian-panel"
@@ -845,6 +864,9 @@ export function RepoListView({
                       {/* Interactive Selection Checkbox */}
                       <button
                         type="button"
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        aria-label={`${isSelected ? "Exclude" : "Include"} ${repo.name} in portfolio showcase`}
                         onClick={() => handleToggleSelection(repo)}
                         disabled={isPending}
                         title={
@@ -852,7 +874,7 @@ export function RepoListView({
                             ? "Included in portfolio — Click to exclude"
                             : "Excluded from portfolio — Click to include"
                         }
-                        className={`mt-1 w-6 h-6 shrink-0 flex items-center justify-center border transition-all duration-150 rounded-none cursor-pointer ${
+                        className={`mt-1 w-6 h-6 shrink-0 flex items-center justify-center border transition-all duration-150 rounded-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-terracotta dark:focus:ring-telemetry-cyan ${
                           isSelected
                             ? "border-terracotta bg-terracotta text-white dark:border-telemetry-cyan dark:bg-telemetry-cyan dark:text-obsidian-void"
                             : "border-hairline hover:border-ink-primary dark:border-obsidian-border dark:hover:border-bone bg-transparent"
@@ -869,10 +891,11 @@ export function RepoListView({
                             href={repo.htmlUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono text-mono-md font-semibold text-ink-primary dark:text-bone hover:text-terracotta dark:hover:text-telemetry-cyan transition-colors flex items-center gap-1.5"
+                            className="font-mono text-mono-md font-semibold text-ink-primary dark:text-bone hover:text-terracotta dark:hover:text-telemetry-cyan transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-terracotta dark:focus:ring-telemetry-cyan"
                           >
                             <span>{repo.name}</span>
                             <ExternalLink className="w-3.5 h-3.5 text-ink-muted dark:text-bone-muted group-hover:text-terracotta dark:group-hover:text-telemetry-cyan" />
+                            <span className="sr-only">(opens on GitHub in a new tab)</span>
                           </Link>
 
                           {/* Language indicator */}

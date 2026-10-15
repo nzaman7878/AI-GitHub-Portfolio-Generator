@@ -85,14 +85,18 @@ function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <button
           onClick={onToggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="p-1.5 text-ink-muted dark:text-bone-muted hover:text-ink-primary dark:hover:text-bone hover:bg-paper-elevated dark:hover:bg-obsidian-card transition-colors cursor-pointer"
+          aria-expanded={!collapsed}
+          className="p-1.5 text-ink-muted dark:text-bone-muted hover:text-ink-primary dark:hover:text-bone hover:bg-paper-elevated dark:hover:bg-obsidian-card transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-terracotta dark:focus-visible:ring-telemetry-cyan"
         >
           {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+      <nav
+        aria-label="Primary sidebar navigation"
+        className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto"
+      >
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -100,8 +104,9 @@ function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 px-2.5 py-2 font-mono text-mono-sm tracking-wide transition-colors group relative",
+                "flex items-center gap-3 px-2.5 py-2 font-mono text-mono-sm tracking-wide transition-colors group relative focus-visible:ring-2 focus-visible:ring-terracotta dark:focus-visible:ring-telemetry-cyan",
                 isActive
                   ? "text-terracotta dark:text-telemetry-cyan bg-terracotta-surface/60 dark:bg-telemetry-cyan/10"
                   : "text-ink-secondary dark:text-bone-secondary hover:text-ink-primary dark:hover:text-bone hover:bg-paper-elevated dark:hover:bg-obsidian-card",
@@ -126,10 +131,12 @@ function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <Link
             href={portfolioUrl}
             target="_blank"
-            className="flex items-center justify-between px-2.5 py-1.5 font-mono text-mono-sm text-ink-muted dark:text-bone-muted hover:text-ink-primary dark:hover:text-bone hover:bg-paper-elevated dark:hover:bg-obsidian-card transition-colors tracking-wider uppercase"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-2.5 py-1.5 font-mono text-mono-sm text-ink-muted dark:text-bone-muted hover:text-ink-primary dark:hover:text-bone hover:bg-paper-elevated dark:hover:bg-obsidian-card transition-colors tracking-wider uppercase focus-visible:ring-2 focus-visible:ring-terracotta dark:focus-visible:ring-telemetry-cyan"
           >
             <span>Portfolio</span>
             <ExternalLink className="w-3 h-3" />
+            <span className="sr-only">(opens in a new tab)</span>
           </Link>
         )}
 
@@ -169,6 +176,18 @@ function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
+  // Close drawer on Escape key
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -181,7 +200,12 @@ function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       />
 
       {/* Drawer Panel */}
-      <div className="fixed inset-y-0 left-0 w-72 z-50 bg-paper-canvas dark:bg-obsidian-panel border-r border-hairline dark:border-obsidian-border flex flex-col animate-page-enter lg:hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation drawer"
+        className="fixed inset-y-0 left-0 w-72 z-50 bg-paper-canvas dark:bg-obsidian-panel border-r border-hairline dark:border-obsidian-border flex flex-col animate-page-enter lg:hidden"
+      >
         {/* Header */}
         <div className="flex items-center justify-between h-14 px-4 border-b border-hairline dark:border-obsidian-border flex-shrink-0">
           <Link href="/" className="flex items-center gap-2" onClick={onClose}>
@@ -230,7 +254,10 @@ function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
+        <nav
+          aria-label="Mobile navigation"
+          className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto"
+        >
           {NAV_ITEMS.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -239,6 +266,7 @@ function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 font-mono text-mono-sm tracking-wide transition-colors relative",
                   isActive
@@ -276,10 +304,11 @@ function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
    ═══════════════════════════════════════════════════════════ */
 
 interface TopHeaderProps {
+  mobileMenuOpen: boolean;
   onMobileMenuToggle: () => void;
 }
 
-function TopHeader({ onMobileMenuToggle }: TopHeaderProps) {
+function TopHeader({ mobileMenuOpen, onMobileMenuToggle }: TopHeaderProps) {
   const { user } = useAuth();
   const pathname = usePathname();
 
@@ -296,7 +325,8 @@ function TopHeader({ onMobileMenuToggle }: TopHeaderProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={onMobileMenuToggle}
-            aria-label="Open navigation menu"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             className="lg:hidden p-1.5 text-ink-muted dark:text-bone-muted hover:text-ink-primary dark:hover:text-bone transition-colors cursor-pointer"
           >
             <Menu className="w-5 h-5" />
@@ -376,10 +406,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
       {/* Main content column */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <TopHeader onMobileMenuToggle={() => setMobileDrawerOpen((p) => !p)} />
+        <TopHeader
+          mobileMenuOpen={mobileDrawerOpen}
+          onMobileMenuToggle={() => setMobileDrawerOpen((p) => !p)}
+        />
 
-        {/* Scrollable main content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Scrollable main content with id for skip-link */}
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto focus:outline-none">
           <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl mx-auto w-full">
             {children}
           </div>

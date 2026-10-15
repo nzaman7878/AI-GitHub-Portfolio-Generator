@@ -96,7 +96,7 @@ AI GitHub Portfolio Generator transforms developer GitHub profiles into high-sig
 ### 🔧 Polish + Production (Phases 49–55)
 
 - [x] **Phase 49** — Input validation + error boundaries (Zod validation on all Server Actions and route error boundaries)
-- [ ] **Phase 50** — Accessibility audit (Keyboard navigation, ARIA landmarks, and WCAG AA contrast)
+- [x] **Phase 50** — Accessibility audit (Keyboard navigation, ARIA landmarks, and WCAG AA contrast)
 - [ ] **Phase 51** — Performance optimization (Image optimization, code splitting, and database indexing)
 - [ ] **Phase 52** — SEO + metadata (Dynamic meta tags, sitemap.xml, robots.txt, and JSON-LD schema)
 - [ ] **Phase 53** — Documentation pass (Interactive architecture diagram and engineering pipeline writeup)
