@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
 import { Reveal } from "@/components/ui/motion";
 import { useTheme } from "@/components/providers/theme-provider";
 import { updateUserSettingsAction, checkSlugAvailabilityAction } from "@/actions/settings";
@@ -183,11 +184,17 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
           message: "All portfolio settings successfully synchronized.",
           timestamp: new Date().toLocaleTimeString(),
         });
+        toast.success(
+          "Settings Saved",
+          "Your portfolio settings and URL configuration were updated successfully.",
+        );
       } else {
+        const errorMsg = res.error || "Failed to update portfolio settings.";
         setSaveFeedback({
           type: "error",
-          message: res.error || "Failed to update portfolio settings.",
+          message: errorMsg,
         });
+        toast.error("Settings Update Failed", errorMsg);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "A network error occurred while saving.";
@@ -195,6 +202,7 @@ export function SettingsView({ initialSettings, isAuthenticated = false }: Setti
         type: "error",
         message: msg,
       });
+      toast.error("Settings Update Exception", msg);
     } finally {
       setIsSaving(false);
     }

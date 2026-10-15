@@ -5,6 +5,7 @@ import { X, Loader2, SquareSlash, RotateCcw, Sparkles, ExternalLink } from "luci
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/toast";
 import { generateCaseStudyAction } from "@/actions/generate";
 import type { RepoWithStatus } from "@/types/github";
 import type { BatchItemStatus } from "@/types/ai";
@@ -206,6 +207,14 @@ export function BatchGeneratorModal({
     setIsGenerating(false);
     setIsFinished(true);
     setCurrentIndex(-1);
+    if (isAborted || abortControllerRef.current) {
+      toast.warning("Batch Synthesis Aborted", "Batch generation was paused by user request.");
+    } else {
+      toast.success(
+        "Batch Synthesis Complete",
+        `Processed all ${selectedRepos.length} selected repositories into engineering monographs.`,
+      );
+    }
     onBatchComplete?.();
     onQuotaRefresh?.();
   };

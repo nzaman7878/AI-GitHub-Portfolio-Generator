@@ -26,6 +26,7 @@ import { Badge, TechBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
 import { Reveal, TelemetryDot } from "@/components/ui/motion";
 import { GITHUB_LANGUAGE_COLORS } from "@/lib/github/languages";
 import {
@@ -321,17 +322,25 @@ export function CaseStudyEditor({
           message: "Dossier overrides committed to PostgreSQL",
           timestamp: new Date().toLocaleTimeString(),
         });
+        toast.success(
+          "Case Study Overrides Saved",
+          `Updates for ${activeItem?.repo.name} committed successfully.`,
+        );
       } else {
+        const errorMsg = res.error || "Failed to save overrides.";
         setSaveStatus({
           type: "error",
-          message: res.error || "Failed to save overrides.",
+          message: errorMsg,
         });
+        toast.error("Save Failed", errorMsg);
       }
     } catch {
+      const errorMsg = "An unexpected network error occurred while saving.";
       setSaveStatus({
         type: "error",
-        message: "An unexpected network error occurred while saving.",
+        message: errorMsg,
       });
+      toast.error("Save Exception", errorMsg);
     } finally {
       setIsSaving(false);
     }

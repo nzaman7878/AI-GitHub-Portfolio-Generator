@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RefreshCw, CheckCircle2, AlertCircle, X, ExternalLink } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { syncAndPersistUserRepositoriesAction } from "@/actions/repos";
 import type { SyncOptions } from "@/lib/github";
 import { cn } from "@/lib/utils";
@@ -94,6 +95,10 @@ export function RepoSyncButton({
         };
 
         setFeedback(feedbackState);
+        toast.success(
+          "Repositories Synchronized",
+          `Successfully synced ${res.totalSynced} repositories from GitHub (${res.durationMs}ms)`,
+        );
         onSyncSuccess?.({
           totalSynced: res.totalSynced,
           durationMs: res.durationMs,
@@ -111,6 +116,7 @@ export function RepoSyncButton({
           rateLimited: res.rateLimited,
           retryAfter: res.retryAfter,
         });
+        toast.error("Repository Sync Failed", errorMsg);
         onSyncError?.(errorMsg);
       }
     } catch (err: unknown) {
@@ -125,6 +131,7 @@ export function RepoSyncButton({
         message: errorMsg,
         timestamp: new Date().toLocaleTimeString(),
       });
+      toast.error("Repository Sync Error", errorMsg);
       onSyncError?.(errorMsg);
     } finally {
       setIsSyncing(false);

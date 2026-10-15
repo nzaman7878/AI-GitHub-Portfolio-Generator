@@ -54,3 +54,5 @@ export {
   type HairlineExpandProps,
   type InteractiveLinkProps,
 } from "./motion";
+
+export { ToastProvider, useToast, toast, type ToastItem, type ToastType } from "./toast";

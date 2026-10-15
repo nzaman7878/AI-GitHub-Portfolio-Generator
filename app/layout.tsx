@@ -3,6 +3,7 @@ import { Newsreader, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google"
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 const newsreader = Newsreader({
   variable: "--font-editorial-serif",
@@ -63,7 +64,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-paper-canvas text-ink-primary dark:bg-obsidian-void dark:text-bone">
         <SessionProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

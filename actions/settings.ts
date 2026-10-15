@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser, requireAuth } from "@/lib/session";
 import { db } from "@/lib/db";
+import {
+  checkSlugInputSchema,
+  updateUserSettingsInputSchema,
+  formatZodError,
+} from "@/lib/validations/actions";
 import type {
   UserSettings,
   UpdateSettingsInput,
@@ -177,29 +182,16 @@ export async function getUserSettingsAction(): Promise<GetSettingsResult> {
  * Server Action: Validates and checks availability for a customized portfolio slug.
  */
 export async function checkSlugAvailabilityAction(slug: string): Promise<CheckSlugResult> {
-  const normalized = slug.trim().toLowerCase();
-
-  // Validate format
-  if (!normalized) {
-    return { available: false, slug: normalized, message: "Portfolio slug cannot be empty." };
-  }
-
-  if (normalized.length < 3) {
-    return { available: false, slug: normalized, message: "Slug must be at least 3 characters." };
-  }
-
-  if (normalized.length > 30) {
-    return { available: false, slug: normalized, message: "Slug cannot exceed 30 characters." };
-  }
-
-  const slugRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
-  if (!slugRegex.test(normalized) || normalized.includes("--")) {
+  const validated = checkSlugInputSchema.safeParse({ slug });
+  if (!validated.success) {
     return {
       available: false,
-      slug: normalized,
-      message: "Only lowercase letters, numbers, and single hyphens allowed.",
+      slug: (slug || "").trim().toLowerCase(),
+      message: formatZodError(validated.error),
     };
   }
+
+  const normalized = validated.data.slug.toLowerCase();
 
   if (RESERVED_SLUGS.has(normalized)) {
     return {
@@ -238,12 +230,20 @@ export async function updateUserSettingsAction(
   input: UpdateSettingsInput,
 ): Promise<UpdateSettingsResult> {
   try {
+    const validated = updateUserSettingsInputSchema.safeParse(input);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const sessionUser = await requireAuth();
 
     // 1. Slug validation if changing
     let validSlug: string | undefined = undefined;
-    if (input.portfolioSlug !== undefined) {
-      const slugCheck = await checkSlugAvailabilityAction(input.portfolioSlug);
+    if (validated.data.portfolioSlug !== undefined) {
+      const slugCheck = await checkSlugAvailabilityAction(validated.data.portfolioSlug);
       if (!slugCheck.available) {
         return {
           success: false,
@@ -260,11 +260,11 @@ export async function updateUserSettingsAction(
 
     const currentPreferences = parseUserPreferences(current?.theme);
 
-    const mergedThemeMode = input.themeMode ?? currentPreferences.themeMode;
-    const mergedDesignTheme = input.designTheme ?? currentPreferences.designTheme;
+    const mergedThemeMode = validated.data.themeMode ?? currentPreferences.themeMode;
+    const mergedDesignTheme = validated.data.designTheme ?? currentPreferences.designTheme;
     const mergedDisplayPreferences: DisplayPreferences = {
       ...currentPreferences.displayPreferences,
-      ...(input.displayPreferences ?? {}),
+      ...(validated.data.displayPreferences ?? {}),
     };
 
     const storedThemeJson = JSON.stringify({
@@ -278,10 +278,12 @@ export async function updateUserSettingsAction(
       where: { id: sessionUser.id },
       data: {
         ...(validSlug ? { portfolioSlug: validSlug } : {}),
-        ...(input.headline !== undefined ? { headline: input.headline } : {}),
-        ...(input.bio !== undefined ? { bio: input.bio } : {}),
-        ...(input.websiteUrl !== undefined ? { websiteUrl: input.websiteUrl } : {}),
-        ...(input.location !== undefined ? { location: input.location } : {}),
+        ...(validated.data.headline !== undefined ? { headline: validated.data.headline } : {}),
+        ...(validated.data.bio !== undefined ? { bio: validated.data.bio } : {}),
+        ...(validated.data.websiteUrl !== undefined
+          ? { websiteUrl: validated.data.websiteUrl }
+          : {}),
+        ...(validated.data.location !== undefined ? { location: validated.data.location } : {}),
         theme: storedThemeJson,
       },
     });

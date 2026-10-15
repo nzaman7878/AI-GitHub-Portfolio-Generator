@@ -20,6 +20,16 @@ import {
   type MarkdownExtractOptions,
   type SyncOptions,
 } from "@/lib/github";
+import {
+  fetchUserReposOptionsSchema,
+  repoIdentifierSchema,
+  markdownExtractOptionsSchema,
+  syncOptionsSchema,
+  toggleRepoSelectionInputSchema,
+  bulkToggleRepoSelectionInputSchema,
+  upsertRepoInputSchema,
+  formatZodError,
+} from "@/lib/validations/actions";
 import type {
   ParsedRepository,
   RepoReadmeData,
@@ -52,13 +62,24 @@ export async function fetchUserRepositoriesAction(
   options?: FetchUserReposOptions,
 ): Promise<FetchUserRepositoriesResult> {
   try {
+    const validated = fetchUserReposOptionsSchema.safeParse(options);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const octokit = await getAuthenticatedOctokit();
 
-    const repos = await withRateLimitHandling(() => fetchUserPublicRepositories(octokit, options), {
-      maxRetries: 2,
-      initialDelayMs: 1000,
-      autoWaitIfSmall: true,
-    });
+    const repos = await withRateLimitHandling(
+      () => fetchUserPublicRepositories(octokit, validated.data),
+      {
+        maxRetries: 2,
+        initialDelayMs: 1000,
+        autoWaitIfSmall: true,
+      },
+    );
 
     return {
       success: true,
@@ -114,10 +135,31 @@ export async function fetchRepoReadmeAction(
   options?: MarkdownExtractOptions,
 ): Promise<FetchRepoReadmeResult> {
   try {
+    const idValidation = repoIdentifierSchema.safeParse({ owner, repo });
+    if (!idValidation.success) {
+      return {
+        success: false,
+        error: formatZodError(idValidation.error),
+      };
+    }
+    const optValidation = markdownExtractOptionsSchema.safeParse(options);
+    if (!optValidation.success) {
+      return {
+        success: false,
+        error: formatZodError(optValidation.error),
+      };
+    }
+
     const octokit = await getAuthenticatedOctokit();
 
     const readme = await withRateLimitHandling(
-      () => fetchRepoReadme(octokit, owner, repo, options),
+      () =>
+        fetchRepoReadme(
+          octokit,
+          idValidation.data.owner,
+          idValidation.data.repo,
+          optValidation.data,
+        ),
       {
         maxRetries: 2,
         initialDelayMs: 1000,
@@ -177,13 +219,24 @@ export async function fetchRepoCommitStatsAction(
   repo: string,
 ): Promise<FetchRepoCommitStatsResult> {
   try {
+    const validated = repoIdentifierSchema.safeParse({ owner, repo });
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const octokit = await getAuthenticatedOctokit();
 
-    const stats = await withRateLimitHandling(() => fetchRepoCommitStats(octokit, owner, repo), {
-      maxRetries: 2,
-      initialDelayMs: 1000,
-      autoWaitIfSmall: true,
-    });
+    const stats = await withRateLimitHandling(
+      () => fetchRepoCommitStats(octokit, validated.data.owner, validated.data.repo),
+      {
+        maxRetries: 2,
+        initialDelayMs: 1000,
+        autoWaitIfSmall: true,
+      },
+    );
 
     return {
       success: true,
@@ -236,13 +289,24 @@ export async function fetchRepoLanguagesAction(
   repo: string,
 ): Promise<FetchRepoLanguagesResult> {
   try {
+    const validated = repoIdentifierSchema.safeParse({ owner, repo });
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const octokit = await getAuthenticatedOctokit();
 
-    const breakdown = await withRateLimitHandling(() => fetchRepoLanguages(octokit, owner, repo), {
-      maxRetries: 2,
-      initialDelayMs: 1000,
-      autoWaitIfSmall: true,
-    });
+    const breakdown = await withRateLimitHandling(
+      () => fetchRepoLanguages(octokit, validated.data.owner, validated.data.repo),
+      {
+        maxRetries: 2,
+        initialDelayMs: 1000,
+        autoWaitIfSmall: true,
+      },
+    );
 
     return {
       success: true,
@@ -292,8 +356,16 @@ export async function upsertRepositoryAction(
   repoData: UpsertRepoInput,
 ): Promise<UpsertRepositoryResult> {
   try {
+    const validated = upsertRepoInputSchema.safeParse(repoData);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
-    const repo = await upsertRepository(user.id, repoData);
+    const repo = await upsertRepository(user.id, validated.data);
 
     return {
       success: true,
@@ -333,11 +405,19 @@ export async function syncAndPersistUserRepositoriesAction(
 ): Promise<SyncAndPersistResult> {
   const startTime = Date.now();
   try {
+    const validated = syncOptionsSchema.safeParse(options);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
     const octokit = await getAuthenticatedOctokit();
 
     const result = await withRateLimitHandling(
-      () => syncAndPersistUserRepositories(user.id, octokit, options),
+      () => syncAndPersistUserRepositories(user.id, octokit, validated.data),
       {
         maxRetries: 2,
         initialDelayMs: 1000,
@@ -437,8 +517,20 @@ export async function toggleRepoSelectionAction(
   isSelected: boolean,
 ): Promise<ToggleRepoSelectionResult> {
   try {
+    const validated = toggleRepoSelectionInputSchema.safeParse({ repoId, isSelected });
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
-    const repo = await toggleRepoSelection(user.id, repoId, isSelected);
+    const repo = await toggleRepoSelection(
+      user.id,
+      validated.data.repoId,
+      validated.data.isSelected,
+    );
 
     revalidatePath("/dashboard/repos");
     revalidatePath("/dashboard");
@@ -476,8 +568,20 @@ export async function bulkToggleRepoSelectionAction(
   isSelected: boolean,
 ): Promise<BulkToggleRepoSelectionResult> {
   try {
+    const validated = bulkToggleRepoSelectionInputSchema.safeParse({ repoIds, isSelected });
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
-    const updatedCount = await bulkToggleRepoSelection(user.id, repoIds, isSelected);
+    const updatedCount = await bulkToggleRepoSelection(
+      user.id,
+      validated.data.repoIds,
+      validated.data.isSelected,
+    );
 
     revalidatePath("/dashboard/repos");
     revalidatePath("/dashboard");

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { Reveal } from "@/components/ui/motion";
 import { GITHUB_LANGUAGE_COLORS } from "@/lib/github/languages";
 import {
@@ -286,6 +287,10 @@ export function RepoListView({
             message: `Case study dossier ready for ${repo.name} (${res.cached ? "preserved fresh cache" : "synthesized via Gemini AI"}).`,
             repoId: repo.id,
           });
+          toast.success(
+            "Case Study Generated",
+            `Dossier compiled for ${repo.name} ${res.cached ? "(from cache)" : "via Gemini AI"}.`,
+          );
 
           // Refresh quota
           try {
@@ -295,11 +300,13 @@ export function RepoListView({
             // Handled
           }
         } else {
+          const errorMsg = res.error || `Failed to generate case study for ${repo.name}.`;
           setGenerationFeedback({
             type: "error",
-            message: res.error || `Failed to generate case study for ${repo.name}.`,
+            message: errorMsg,
             repoId: repo.id,
           });
+          toast.error("Generation Failed", errorMsg);
         }
       }
     } catch (err: unknown) {
@@ -309,6 +316,7 @@ export function RepoListView({
         message: msg,
         repoId: repo.id,
       });
+      toast.error("Generation Exception", msg);
     } finally {
       setGeneratingRepoIds((prev) => {
         const next = new Set(prev);
@@ -458,21 +466,27 @@ export function RepoListView({
     try {
       const res = await bulkToggleRepoSelectionAction(targetIds, select);
       if (!res.success) {
+        const errorMsg = res.error || "Bulk update failed.";
         setBulkFeedback({
           type: "error",
-          message: res.error || "Bulk update failed.",
+          message: errorMsg,
         });
+        toast.error("Bulk Selection Failed", errorMsg);
       } else {
+        const successMsg = `Successfully updated inclusion for ${res.updatedCount} repositories.`;
         setBulkFeedback({
           type: "success",
-          message: `Successfully updated ${res.updatedCount} repositories.`,
+          message: successMsg,
         });
+        toast.success(select ? "Repositories Selected" : "Repositories Deselected", successMsg);
       }
     } catch {
+      const errorMsg = "An unexpected error occurred during bulk update.";
       setBulkFeedback({
         type: "error",
-        message: "An unexpected error occurred during bulk update.",
+        message: errorMsg,
       });
+      toast.error("Bulk Selection Exception", errorMsg);
     } finally {
       setIsBulkPending(false);
     }

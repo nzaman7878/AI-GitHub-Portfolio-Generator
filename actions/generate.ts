@@ -11,6 +11,14 @@ import {
 import { getGeminiQuotaUsage } from "@/lib/ai/rate-limit";
 import type { SerializedCaseStudy, GeminiQuotaStatusSerialized } from "@/types/ai";
 
+import {
+  generateCaseStudyInputSchema,
+  getRepoCaseStudyInputSchema,
+  batchGenerateCaseStudiesInputSchema,
+  updateCaseStudyInputSchema,
+  formatZodError,
+} from "@/lib/validations/actions";
+
 export interface GenerateCaseStudyActionParams {
   repoId: string;
   customInstructions?: string;
@@ -25,13 +33,22 @@ export async function generateCaseStudyAction(
   params: GenerateCaseStudyActionParams,
 ): Promise<GenerateCaseStudyResponse> {
   try {
+    const validated = generateCaseStudyInputSchema.safeParse(params);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+        status: "FAILED",
+      };
+    }
+
     const user = await requireAuth();
 
     return await generateCaseStudyForRepo({
-      repoId: params.repoId,
+      repoId: validated.data.repoId,
       userId: user.id,
-      customInstructions: params.customInstructions,
-      forceRegenerate: params.forceRegenerate,
+      customInstructions: validated.data.customInstructions,
+      forceRegenerate: validated.data.forceRegenerate,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to generate case study.";
@@ -59,8 +76,16 @@ export type GetCaseStudyResult =
  */
 export async function getRepoCaseStudyAction(repoId: string): Promise<GetCaseStudyResult> {
   try {
+    const validated = getRepoCaseStudyInputSchema.safeParse({ repoId });
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const caseStudy = await db.caseStudy.findUnique({
-      where: { repoId },
+      where: { repoId: validated.data.repoId },
     });
 
     return {
@@ -137,14 +162,22 @@ export async function generateBatchCaseStudiesAction(
   params: BatchGenerateCaseStudiesActionParams,
 ): Promise<BatchGenerateCaseStudiesActionResult> {
   try {
+    const validated = batchGenerateCaseStudiesInputSchema.safeParse(params);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
     const { generateBatchCaseStudies } = await import("@/lib/ai/batch");
 
     const summary = await generateBatchCaseStudies({
-      repoIds: params.repoIds,
+      repoIds: validated.data.repoIds,
       userId: user.id,
-      forceRegenerate: params.forceRegenerate,
-      stopOnRateLimit: params.stopOnRateLimit,
+      forceRegenerate: validated.data.forceRegenerate,
+      stopOnRateLimit: validated.data.stopOnRateLimit,
     });
 
     return {
@@ -189,12 +222,20 @@ export async function updateCaseStudyAction(
   input: UpdateCaseStudyInput,
 ): Promise<UpdateCaseStudyResult> {
   try {
+    const validated = updateCaseStudyInputSchema.safeParse(input);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: formatZodError(validated.error),
+      };
+    }
+
     const user = await requireAuth();
 
     // Verify ownership via repo
     const existing = await db.caseStudy.findFirst({
       where: {
-        id: input.caseStudyId,
+        id: validated.data.caseStudyId,
         repo: {
           userId: user.id,
         },
@@ -209,13 +250,15 @@ export async function updateCaseStudyAction(
     }
 
     const updated = await db.caseStudy.update({
-      where: { id: input.caseStudyId },
+      where: { id: validated.data.caseStudyId },
       data: {
-        ...(input.title !== undefined && { title: input.title }),
-        ...(input.subtitle !== undefined && { subtitle: input.subtitle }),
-        ...(input.summary !== undefined && { summary: input.summary }),
-        ...(input.highlights !== undefined && { highlights: input.highlights }),
-        ...(input.isPublished !== undefined && { isPublished: input.isPublished }),
+        ...(validated.data.title !== undefined && { title: validated.data.title }),
+        ...(validated.data.subtitle !== undefined && { subtitle: validated.data.subtitle }),
+        ...(validated.data.summary !== undefined && { summary: validated.data.summary }),
+        ...(validated.data.highlights !== undefined && { highlights: validated.data.highlights }),
+        ...(validated.data.isPublished !== undefined && {
+          isPublished: validated.data.isPublished,
+        }),
       },
     });
 
